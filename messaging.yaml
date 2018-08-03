@@ -1,0 +1,16 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+service: messaging
+
+handlers:
+- url: /.*
+  script: messaging.app
+  secure: always
+
+libraries:
+- name: ssl
+  version: latest
+
+skip_files:
+- env/

@@ -3,11 +3,8 @@
 import os
 import hashlib
 from google.appengine.ext import ndb
-from functools import reduce
-from toolz import assoc
 
-
-QUERY_LIMIT = 10
+from messaging import helpers
 
 
 class Account(ndb.Model):
@@ -26,50 +23,8 @@ class Account(ndb.Model):
         return api_key
 
 
-def create(body, with_key=False):
-    if Account.get_by_id(body.get('site')):
-        raise ReferenceError()
-    account = Account(
-        id=body.get('site'),
-        site=body.get('site'),
-        name=body.get('name'),
-    )
-    account.put()
-    return account.to_dict()
-
-
-def get(id):
-    account = Account.get_by_id(id)
-    if not account:
-        raise ReferenceError()
-    return account.to_dict()
-
-
-def update(id, body):
-    account = Account.get_by_id(id)
-    if not account:
-        raise ReferenceError()
-
-    def set_field(a, x):
-        if body.get(x):
-            return assoc(a, x, body.get(x))
-        return a
-    kwargs = reduce(set_field, ['name'], {})
-    if kwargs:
-        account.populate(**kwargs)
-        account.put()
-    return account.to_dict()
-
-
-def delete(id):
-    account = Account.get_by_id(id)
-    if not account:
-        raise ReferenceError()
-    return account.key.delete()
-
-
-def list():
-    accounts = Account.query() \
-        .order(Account.modified_at) \
-        .fetch(limit=QUERY_LIMIT)
-    return map(lambda x: x.to_dict(), accounts)
+create = helpers.make_create(Account, 'site', ['site', 'name'])
+get = helpers.make_get(Account)
+list = helpers.make_list(Account)
+update = helpers.make_update(Account, ['name'])
+delete = helpers.make_delete(Account)

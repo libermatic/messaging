@@ -9,7 +9,7 @@ import logging
 from functools import partial
 from toolz import compose
 
-from messaging import app, accounts
+from messaging import app, accounts, providers
 
 
 @app.route('/accounts', methods=['GET', 'POST'])
@@ -45,6 +45,31 @@ def handle_accounts_key(id):
         return compose(jsonify, accounts.generate_api_key)(id)
     except ReferenceError:
         return abort(404, 'Entity not found')
+
+
+@app.route('/providers', methods=['GET', 'POST'])
+@app.route('/providers/<id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_providers(id=None):
+    if id:
+        try:
+            if request.method == 'GET':
+                return compose(jsonify, providers.get)(id)
+            if request.method == 'PUT':
+                return compose(
+                    jsonify, partial(providers.update, id), request.get_json
+                )()
+            if request.method == 'DELETE':
+                return compose(jsonify, providers.delete)(id), 204
+        except ReferenceError:
+            return abort(404, 'Entity not found')
+    if request.method == 'GET':
+        return compose(jsonify, providers.list)()
+    if request.method == 'POST':
+        try:
+            return compose(jsonify, providers.create, request.get_json)()
+        except (BadValueError, BadRequestError):
+            return abort(400, 'Invalid datatype or missing required fields')
+        except ReferenceError:
             return abort(400, 'Entity already exists')
     return abort(400, 'WTF')
 

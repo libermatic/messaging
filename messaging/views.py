@@ -9,7 +9,7 @@ import logging
 from functools import partial
 from toolz import compose
 
-from messaging import app, accounts, providers
+from messaging import app, accounts, providers, services
 
 
 @app.route('/accounts', methods=['GET', 'POST'])
@@ -40,7 +40,7 @@ def handle_accounts(id=None):
 
 
 @app.route('/accounts/<id>/key')
-def handle_accounts_key(id):
+def handle_key_gen(id):
     try:
         return compose(jsonify, accounts.generate_api_key)(id)
     except ReferenceError:
@@ -72,6 +72,38 @@ def handle_providers(id=None):
         except ReferenceError:
             return abort(400, 'Entity already exists')
     return abort(400, 'WTF')
+
+
+@app.route('/accounts/<site>/services', methods=['GET', 'POST'])
+def handle_accounts_services(site):
+    if request.method == 'GET':
+        return compose(jsonify, services.list)(site)
+    if request.method == 'POST':
+        try:
+            return compose(
+                jsonify,
+                partial(services.create, site=site),
+                request.get_json,
+            )()
+        except (BadValueError, BadRequestError):
+            return abort(400, 'Invalid datatype or missing required fields')
+        except ReferenceError:
+            return abort(404, 'Referenced entity not found')
+
+
+@app.route('/services/<id>', methods=['GET', 'PUT', 'DELETE'])
+def handle_services(id):
+    try:
+        if request.method == 'GET':
+            return compose(jsonify, services.get)(id)
+        if request.method == 'PUT':
+            return compose(
+                jsonify, partial(services.update, id), request.get_json
+            )()
+        if request.method == 'DELETE':
+            return compose(jsonify, services.delete)(id), 204
+    except ReferenceError:
+        return abort(404, 'Entity not found')
 
 
 @app.route('/')

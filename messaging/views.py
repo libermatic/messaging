@@ -37,6 +37,14 @@ def handle_accounts(id=None):
         except ReferenceError:
             return abort(400, 'Entity already exists')
     return abort(400, 'WTF')
+
+
+@app.route('/accounts/<id>/key')
+def handle_accounts_key(id):
+    try:
+        return compose(jsonify, accounts.generate_api_key)(id)
+    except ReferenceError:
+        return abort(404, 'Entity not found')
             return abort(400, 'Entity already exists')
     return abort(400, 'WTF')
 

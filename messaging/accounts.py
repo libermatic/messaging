@@ -28,3 +28,11 @@ get = helpers.make_get(Account)
 list = helpers.make_list(Account)
 update = helpers.make_update(Account, ['name'])
 delete = helpers.make_delete(Account)
+
+
+def generate_api_key(id):
+    account = Account.get_by_id(id)
+    if not account:
+        raise ReferenceError()
+    api_key = account.generate_api_key()
+    return {'site': account.site, 'api_key': api_key}

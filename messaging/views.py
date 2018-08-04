@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from flask import request, jsonify, abort
 from google.appengine.api.datastore_errors import (
     BadValueError, BadRequestError
@@ -24,38 +25,30 @@ def handle_accounts(id=None):
                 )()
             if request.method == 'DELETE':
                 return compose(jsonify, accounts.delete)(id), 204
-        except ReferenceError as e:
-            logging.exception(e)
+        except ReferenceError:
             return abort(404, 'Entity not found')
     if request.method == 'GET':
         return compose(jsonify, accounts.list)()
     if request.method == 'POST':
         try:
             return compose(jsonify, accounts.create, request.get_json)()
-        except (BadValueError, BadRequestError) as e:
-            logging.exception(e)
+        except (BadValueError, BadRequestError):
             return abort(400, 'Invalid datatype or missing required fields')
-        except ReferenceError as e:
-            logging.exception(e)
+        except ReferenceError:
+            return abort(400, 'Entity already exists')
+    return abort(400, 'WTF')
             return abort(400, 'Entity already exists')
     return abort(400, 'WTF')
 
 
 @app.route('/')
 def index():
-    return 'Nada'
+    return os.getenv('CURRENT_VERSION_ID', 'None').split('.')[0]
 
 
 @app.errorhandler(400)
-def handle_bad_request(error):
-    return jsonify({'error': error.description}), 400
-
-
 @app.errorhandler(404)
-def handle_not_found(error):
-    return jsonify({'error': error.description}), 404
-
-
 @app.errorhandler(405)
-def handle_method_not_allowed(error):
-    return jsonify({'error': error.description}), 405
+def handle_4xx_errors(error):
+    logging.exception(error)
+    return jsonify({'error': error.description}), error.code

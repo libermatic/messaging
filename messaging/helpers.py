@@ -7,14 +7,14 @@ from toolz import assoc
 QUERY_LIMIT = 10
 
 
-def make_create(model, id_field, fields):
+def make_create(model, fields, id_field=None):
     def fn(body):
-        if model.get_by_id(body.get(id_field)):
+        if id_field and model.get_by_id(body.get(id_field)):
             raise ReferenceError()
         field_kwargs = _pick(fields, body)
-        entity = model(
-            id=body.get(id_field), **field_kwargs
-        )
+        entity = model(**field_kwargs)
+        if id_field:
+            entity.id = body.get(id_field)
         entity.put()
         return entity.to_dict()
     return fn

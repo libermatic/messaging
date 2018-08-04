@@ -23,7 +23,7 @@ class Account(ndb.Model):
         return api_key
 
 
-create = helpers.make_create(Account, 'site', ['site', 'name'])
+create = helpers.make_create(Account, ['site', 'name'], 'site')
 get = helpers.make_get(Account)
 list = helpers.make_list(Account)
 update = helpers.make_update(Account, ['name'])

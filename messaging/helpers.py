@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from google.appengine.ext import ndb
 from functools import reduce
 from toolz import assoc
 
@@ -20,9 +21,10 @@ def make_create(model, fields, id_field=None):
     return fn
 
 
-def make_get(model):
+def make_get(model, urlsafe=False):
     def fn(id):
-        entity = model.get_by_id(id)
+        entity = ndb.Key(urlsafe=id).get() \
+            if urlsafe else model.get_by_id(id)
         if not entity:
             raise ReferenceError()
         return entity.to_dict()
@@ -38,9 +40,10 @@ def make_list(model):
     return fn
 
 
-def make_update(model, fields):
+def make_update(model, fields, urlsafe=False):
     def fn(id, body):
-        entity = model.get_by_id(id)
+        entity = ndb.Key(urlsafe=id).get() \
+            if urlsafe else model.get_by_id(id)
         if not entity:
             raise ReferenceError()
         field_kwargs = _pick(fields, body)
@@ -51,9 +54,10 @@ def make_update(model, fields):
     return fn
 
 
-def make_delete(model):
+def make_delete(model, urlsafe=False):
     def fn(id):
-        entity = model.get_by_id(id)
+        entity = ndb.Key(urlsafe=id).get() \
+            if urlsafe else model.get_by_id(id)
         if not entity:
             raise ReferenceError()
         return entity.key.delete()

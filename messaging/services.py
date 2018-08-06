@@ -8,7 +8,7 @@ from messaging import helpers
 
 class Service(ndb.Model):
     name = ndb.StringProperty(required=True)
-    provider = ndb.KeyProperty('Account', required=True)
+    provider = ndb.KeyProperty('Provider', required=True)
     quota = ndb.IntegerProperty()
     modified_at = ndb.DateTimeProperty(auto_now=True)
 

@@ -10,7 +10,7 @@ QUERY_LIMIT = 10
 
 def make_create(model, fields, id_field=None):
     def fn(body):
-        if model.get_by_id(body.get(id_field)):
+        if id_field and model.get_by_id(body.get(id_field)):
             raise ReferenceError()
         field_kwargs = assoc(_pick(fields, body), 'id', body.get(id_field)) \
             if id_field else _pick(fields, body)

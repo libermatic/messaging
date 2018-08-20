@@ -9,12 +9,14 @@ from messaging import helpers
 class Service(ndb.Model):
     name = ndb.StringProperty(required=True)
     provider = ndb.KeyProperty('Provider', required=True)
+    vendor_key = ndb.StringProperty()
     quota = ndb.IntegerProperty()
+    balance = ndb.IntegerProperty(default=0)
     modified_at = ndb.DateTimeProperty(auto_now=True)
 
     def to_dict(self):
         return merge(
-            super(Service, self).to_dict(exclude=['provider']),
+            super(Service, self).to_dict(exclude=['provider', 'vendor_key']),
             {
                 'id': self.key.urlsafe(),
                 'account': self.key.parent().id(),
@@ -29,7 +31,8 @@ def create(body, site):
     if not account.get() or not provider.get():
         raise ReferenceError()
     return helpers.make_create(
-        Service, ['name', 'provider', 'quota', 'parent']
+        Service,
+        ['name', 'provider', 'quota', 'vendor_key', 'balance', 'parent'],
     )(
         merge(body, {'provider': provider, 'parent': account})
     )

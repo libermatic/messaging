@@ -7,13 +7,13 @@ from messaging import helpers
 
 class Provider(ndb.Model):
     name = ndb.StringProperty(required=True)
+    type = ndb.StringProperty(choices=['text'])
     base_url = ndb.StringProperty(required=True)
-    vendor_key = ndb.StringProperty(required=True)
     modified_at = ndb.DateTimeProperty(auto_now=True)
 
 
 create = helpers.make_create(
-    Provider, ['name', 'base_url', 'vendor_key'], 'name'
+    Provider, ['name', 'type', 'base_url'], 'name'
 )
 get = helpers.make_get(Provider)
 list = helpers.make_list(Provider)

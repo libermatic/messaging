@@ -36,3 +36,13 @@ def generate_api_key(id):
         raise ReferenceError()
     api_key = account.generate_api_key()
     return {'site': account.site, 'api_key': api_key}
+
+
+def get_account_by_key(key):
+    if not key:
+        return None
+    key_hash = hashlib.sha1(key).hexdigest()
+    try:
+        return Account.query(Account.key_hash == key_hash).fetch(limit=1)[0]
+    except IndexError:
+        return None

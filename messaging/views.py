@@ -8,8 +8,9 @@ from google.appengine.api.datastore_errors import (
 import logging
 from functools import partial
 from toolz import compose
+from werkzeug.exceptions import HTTPException
 
-from messaging import app, accounts, providers, services
+from messaging import app, accounts, providers, services, messages
 
 
 @app.route('/accounts', methods=['GET', 'POST'])
@@ -106,12 +107,42 @@ def handle_services(id):
         return abort(404, 'Entity not found')
 
 
+@app.route('/services/<id>/message', methods=['GET', 'POST'])
+def handle_messages(id):
+    def get_payload():
+        if request.method == 'GET':
+            return request.args
+        if request.method == 'POST':
+            return request.json if request.is_json else request.form
+        return None
+
+    try:
+        return compose(
+            jsonify,
+            partial(messages.create, service_id=id),
+            get_payload,
+        )()
+    except ReferenceError as e:
+        if e.message == 'INVALID_USER':
+            return abort(401, 'Invalid user')
+        return abort(404, 'Entity not found')
+    except ValueError:
+        error = PaymentRequired(description='Balance depleted')
+        return handle_4xx_errors(error)
+
+
 @app.route('/')
 def index():
     return os.getenv('CURRENT_VERSION_ID', 'None').split('.')[0]
 
 
+class PaymentRequired(HTTPException):
+    code = 402
+    description = '<p>Payment required.</p>'
+
+
 @app.errorhandler(400)
+@app.errorhandler(401)
 @app.errorhandler(404)
 @app.errorhandler(405)
 def handle_4xx_errors(error):

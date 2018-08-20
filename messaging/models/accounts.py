@@ -4,8 +4,6 @@ import os
 import hashlib
 from google.appengine.ext import ndb
 
-from messaging import helpers
-
 
 class Account(ndb.Model):
     site = ndb.StringProperty(required=True)
@@ -23,19 +21,11 @@ class Account(ndb.Model):
         return api_key
 
 
-create = helpers.make_create(Account, ['site', 'name'], 'site')
-get = helpers.make_get(Account)
-list = helpers.make_list(Account)
-update = helpers.make_update(Account, ['name'])
-delete = helpers.make_delete(Account)
-
-
 def generate_api_key(id):
     account = Account.get_by_id(id)
     if not account:
         raise ReferenceError()
-    api_key = account.generate_api_key()
-    return {'site': account.site, 'api_key': api_key}
+    return account.generate_api_key()
 
 
 def get_account_by_key(key):

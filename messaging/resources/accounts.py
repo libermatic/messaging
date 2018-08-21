@@ -71,7 +71,7 @@ class AccountList(Resource):
         except (BadValueError, BadRequestError):
             return abort(400, message=error_responses.INVALID_FIELD)
         except ReferenceError:
-            return abort(400, message=error_responses.ALREADY_EXISTS)
+            return abort(409, message=error_responses.ALREADY_EXISTS)
 
 
 class AccountKey(Resource):

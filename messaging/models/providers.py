@@ -6,9 +6,11 @@ from toolz import merge, dissoc
 
 class Provider(ndb.Model):
     name = ndb.StringProperty(required=True)
+    balance = ndb.IntegerProperty(default=0)
     type = ndb.StringProperty(choices=['text'])
     base_url = ndb.StringProperty(required=True)
     methods = ndb.JsonProperty(default={})
+    config = ndb.JsonProperty(default={})
     modified_at = ndb.DateTimeProperty(auto_now=True)
 
     def to_dict(self):
@@ -52,3 +54,12 @@ def remove_method(id, action):
     provider.methods = dissoc(provider.methods or {}, action)
     provider.put()
     return None
+
+
+def put_config(id, config):
+    provider = Provider.get_by_id(id)
+    if not provider:
+        raise ReferenceError()
+    provider.config = merge(provider.config or {}, config)
+    provider.put()
+    return provider.to_dict()

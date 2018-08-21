@@ -18,17 +18,27 @@ method_fields = {
     'path': fields.String,
     'args': fields.List(fields.String),
 }
+config_fields = {
+    'auth_label': fields.String,
+    'auth_location': fields.String,
+    'error_condition': fields.String,
+    'cost_field': fields.String,
+    'balance_field': fields.String,
+    'error_field': fields.String,
+}
 resource_fields = {
     'name': fields.String,
     'type': fields.String,
     'base_url': fields.String,
     'methods': fields.List(fields.Nested(method_fields)),
+    'config': fields.Nested(config_fields),
     'modified_at': fields.DateTime(dt_format='iso8601'),
 }
 
 id_field = 'name'
 create_fields = remove(
-    lambda x: x == 'modified_at', resource_fields.keys()
+    lambda x: x in ['methods', 'config', 'modified_at'],
+    resource_fields.keys(),
 )
 update_fields = remove(lambda x: x == id_field, create_fields)
 
@@ -88,7 +98,7 @@ method_parser = reqparse.RequestParser()
 method_parser.add_argument(
     'action', required=True, help=error_responses.INVALID_FIELD,
 )
-method_parser.add_argument('method', choices=['get', 'post'])
+method_parser.add_argument('method', choices=['GET', 'POST'])
 method_parser.add_argument('path')
 method_parser.add_argument('args', action='append')
 
@@ -121,6 +131,33 @@ class ProviderMethodPut(Resource):
             return compose(
                 partial(providers.put_method, id),
                 method_parser.parse_args,
+            )()
+        except ReferenceError:
+            return abort(404, message=error_responses.NOT_FOUND)
+
+
+config_parser = reqparse.RequestParser()
+config_parser.add_argument('auth_label', required=True)
+config_parser.add_argument(
+    'auth_location', choices=['header', 'body', 'query'], required=True,
+)
+config_parser.add_argument('error_condition', type=dict)
+config_parser.add_argument('error_field')
+config_parser.add_argument('cost_field')
+config_parser.add_argument('balance_field')
+
+single_config_fields = keyfilter(
+    lambda x: x in ['name', 'config'], resource_fields,
+)
+
+
+class ProviderConfigPut(Resource):
+    @marshal_with(single_config_fields)
+    def post(self, id):
+        try:
+            return compose(
+                partial(providers.put_config, id),
+                config_parser.parse_args,
             )()
         except ReferenceError:
             return abort(404, message=error_responses.NOT_FOUND)

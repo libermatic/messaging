@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
-from toolz import merge
+from toolz import merge, concatv
 
 from messaging import helpers
 
@@ -25,28 +25,31 @@ class Service(ndb.Model):
         )
 
 
-def create(body, site):
-    provider = ndb.Key('Provider', body.get('provider'))
+def create(fields, site, body):
     account = ndb.Key('Account', site)
+    provider = ndb.Key('Provider', body.get('provider'))
     if not account.get() or not provider.get():
         raise ReferenceError()
     return helpers.make_create(
-        Service,
-        ['name', 'provider', 'quota', 'vendor_key', 'balance', 'parent'],
+        Service, concatv(fields, ['parent']),
     )(
         merge(body, {'provider': provider, 'parent': account})
     )
 
 
-def list(site=None):
-    if site:
-        entities = Service.query(ancestor=ndb.Key('Account', site)) \
-            .order(Service.modified_at) \
-            .fetch(limit=helpers.QUERY_LIMIT)
-        return map(lambda x: x.to_dict(), entities)
-    return helpers.make_list(Service)()
+def update(fields, id, body):
+    provider = body.get('provider')
+    if provider and not ndb.Key('Provider', provider).get():
+        raise ReferenceError()
+    return helpers.make_update(Service, fields, urlsafe=True)(
+        id,
+        merge(body, {'provider': ndb.Key('Provider', provider)})
+        if provider else body,
+    )
 
 
-get = helpers.make_get(Service, urlsafe=True)
-update = helpers.make_update(Service, ['name', 'quota'], urlsafe=True)
-delete = helpers.make_delete(Service, urlsafe=True)
+def list_by_site(site=None):
+    entities = Service.query(ancestor=ndb.Key('Account', site)) \
+        .order(Service.modified_at) \
+        .fetch(limit=helpers.QUERY_LIMIT)
+    return map(lambda x: x.to_dict(), entities)

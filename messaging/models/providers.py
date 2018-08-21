@@ -8,7 +8,7 @@ class Provider(ndb.Model):
     name = ndb.StringProperty(required=True)
     type = ndb.StringProperty(choices=['text'])
     base_url = ndb.StringProperty(required=True)
-    methods = ndb.JsonProperty()
+    methods = ndb.JsonProperty(default={})
     modified_at = ndb.DateTimeProperty(auto_now=True)
 
     def to_dict(self):

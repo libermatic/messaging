@@ -7,6 +7,9 @@ from messaging.resources.providers \
     ProviderConfigPut
 from messaging.resources.services \
     import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic
+from messaging.resources.messages import MessageList, MessageAll
+
+
 import requests_toolbelt.adapters.appengine
 requests_toolbelt.adapters.appengine.monkeypatch()
 
@@ -28,4 +31,6 @@ api.add_resource(ServiceList, '/accounts/<string:site>/services')
 api.add_resource(ServiceAll, '/services')
 api.add_resource(Service, '/services/<string:id>')
 api.add_resource(ServiceStaticPut, '/services/<string:id>/static')
+api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceStatic, '/services/<string:id>/static/<string:field>')
+api.add_resource(MessageAll, '/messages')

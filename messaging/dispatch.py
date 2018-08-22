@@ -2,7 +2,7 @@
 
 import requests
 from functools import reduce, partial
-from toolz import merge, assoc
+from toolz import merge, assoc, valfilter
 
 from messaging.utils import pick
 
@@ -52,9 +52,19 @@ def _make_kv_check(config):
 
 
 def _make_prices(config):
-    fields = pick(['cost_field', 'balance_field'], config)
+    def map_fields(to_d, from_d):
+        return valfilter(
+            lambda v: v is not None,
+            {k: from_d.get(v) for k, v in to_d.iteritems()},
+        )
+
+    price_map = {
+        'cost': 'cost_field',
+        'balance': 'balance_field',
+    }
     return partial(
-        pick, filter(None, fields)
+        map_fields,
+        map_fields(price_map, config)
     )
 
 
@@ -78,25 +88,18 @@ def request(key, statics, config, method, body):
 
     contains_error_condition = _make_condition_check(config)
     contains_error_field = _make_kv_check(config)
-    if not res.ok or \
-            contains_error_condition(result) or \
-            contains_error_field(result):
-        return {
-            'status': 'failure',
-            'response': {
-                'status_code': res.status_code,
-                'content': result,
-            },
-        }
-
+    has_failed = not res.ok or \
+        contains_error_condition(result) or \
+        contains_error_field(result)
     prices = _make_prices(config)
+
     return merge(
         {
-            'status': 'success',
+            'status': 'failure' if has_failed else 'success',
             'response': {
                 'status_code': res.status_code,
                 'content': result,
             },
         },
-        prices(result),
+        prices(result) if not has_failed else {},
     )

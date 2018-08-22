@@ -7,6 +7,8 @@ from messaging.resources.providers \
     ProviderConfigPut
 from messaging.resources.services \
     import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic
+import requests_toolbelt.adapters.appengine
+requests_toolbelt.adapters.appengine.monkeypatch()
 
 
 app = Flask(__name__)

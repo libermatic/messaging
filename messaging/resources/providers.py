@@ -29,6 +29,7 @@ config_fields = {
 resource_fields = {
     'name': fields.String,
     'type': fields.String,
+    'balance': fields.Integer,
     'base_url': fields.String,
     'methods': fields.List(fields.Nested(method_fields)),
     'config': fields.Nested(config_fields),
@@ -37,7 +38,7 @@ resource_fields = {
 
 id_field = 'name'
 create_fields = remove(
-    lambda x: x in ['methods', 'config', 'modified_at'],
+    lambda x: x in ['methods', 'config', 'balance', 'modified_at'],
     resource_fields.keys(),
 )
 update_fields = remove(lambda x: x == id_field, create_fields)

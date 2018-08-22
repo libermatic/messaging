@@ -11,6 +11,7 @@ from toolz import compose, remove, concatv, keyfilter, merge
 
 from messaging import helpers, error_responses
 from messaging.models import services
+from messaging.resources import messages
 
 static_fields = {
     'field': fields.String(),
@@ -124,3 +125,19 @@ class ServiceAll(Resource):
     @marshal_with(resource_fields)
     def get(self):
         return helpers.make_list(services.Service)()
+
+
+class ServiceAction(Resource):
+    @marshal_with(messages.resource_fields)
+    def post(self, id, action):
+        try:
+            return compose(
+                partial(services.call, id, action),
+                request.get_json
+            )()
+        except NameError:
+            return abort(401, message=error_responses.UNAUTHORIZED)
+        except KeyError:
+            return abort(400, message=error_responses.UNKNOWN_ACTION)
+        except IOError:
+            return abort(503, message=error_responses.SERVICE_FAILURE)

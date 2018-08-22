@@ -6,7 +6,8 @@ from messaging.resources.providers \
     import Provider, ProviderList, ProviderMethod, ProviderMethodPut, \
     ProviderConfigPut
 from messaging.resources.services \
-    import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic
+    import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic, \
+    ServiceAction
 from messaging.resources.messages import MessageList, MessageAll
 
 
@@ -33,4 +34,5 @@ api.add_resource(Service, '/services/<string:id>')
 api.add_resource(ServiceStaticPut, '/services/<string:id>/static')
 api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceStatic, '/services/<string:id>/static/<string:field>')
+api.add_resource(ServiceAction, '/services/<string:id>/<string:action>')
 api.add_resource(MessageAll, '/messages')

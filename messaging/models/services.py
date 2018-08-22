@@ -6,6 +6,7 @@ from toolz import merge, concatv, pluck
 from messaging import helpers
 from messaging.models.accounts import get_account_by_key
 from messaging.dispatch import request
+from messaging.models import messages
 
 
 class Service(ndb.Model):
@@ -103,3 +104,35 @@ def remove_static(id, field):
     )
     service.put()
     return None
+
+
+def _is_service_authorized(id, key=None):
+    if not key:
+        return False
+    account = get_account_by_key(key)
+    if not account:
+        return False
+    service = ndb.Key(urlsafe=id).get()
+    if not service or service.key.parent() != account.key:
+        return False
+    return True
+
+
+def call(id, action, body):
+    if not _is_service_authorized(id, body.get('key')):
+        raise NameError
+    service = ndb.Key(urlsafe=id).get()
+    provider = service.provider.get()
+    method = provider.get_method(action)
+    if not method:
+        raise KeyError
+    res = request(
+        service.vendor_key, service.statics, provider.config, method, body,
+    )
+    if res.get('status') == 'success':
+        service.balance -= res.get('cost', 1)
+        service.put()
+        if res.get('balance'):
+            provider.balance = res.get('balance')
+            provider.put()
+    return messages.create(service.key, res)

@@ -53,6 +53,11 @@ A **Provider**
 
 ### `PUT /providers/<string:id>`
 
+#### args
+
+- `type` String.
+- `base_url` String.
+
 An updated **Provider**
 
 ### `DELETE /providers/<string:id>`
@@ -99,6 +104,8 @@ List of **Services** for the **Account**
 - `name` String.
 - `provider` String. A valid provider `id`.
 - `quota` Integer.
+- `vendor_key`: String.
+- `unlimit`: Boolean.
 
 Create a **Service** for the **Account**
 
@@ -111,6 +118,14 @@ List of all **Services**
 A **Service**
 
 ### `PUT /services/<string:id>`
+
+#### args
+
+- `name` String.
+- `provider` String. A valid provider `id`.
+- `quota` Integer.
+- `vendor_key`: String.
+- `unlimit`: Boolean.
 
 An updated **Service**
 

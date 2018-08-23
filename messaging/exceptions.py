@@ -37,6 +37,10 @@ class UnsupportedContent(MessagingException):
     '''Raises when the request content_type is not supported'''
 
 
+class ServiceBalanceDepleted(MessagingException):
+    '''Raises trying to call service without balance'''
+
+
 errors = {
     'EntityAlreadyExists': {
         'message': "Entity already exists.",
@@ -73,5 +77,9 @@ errors = {
     'UnsupportedContent': {
         'message': "Content Type is unsupported",
         'status': 400,
-    }
+    },
+    'ServiceBalanceDepleted': {
+        'message': "Balance exhausted",
+        'status': 402,
+    },
 }

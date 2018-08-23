@@ -31,7 +31,7 @@ resource_fields = {
 update_fields = omit(
     ['id', 'modified_at', 'account', 'balance', 'statics'],
     resource_fields,
-).keys() + ['vendor_key']
+).keys() + ['vendor_key', 'unlimit']
 
 
 class Service(Resource):

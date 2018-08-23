@@ -9,7 +9,7 @@ from messaging.dispatch import request
 from messaging.models import messages
 from messaging.exceptions import (
     EntityNotFound, ReferencedEntityNotFound,
-    ServiceUnauthorized, ServiceMethodNotFound,
+    ServiceUnauthorized, ServiceMethodNotFound, ServiceBalanceDepleted
 )
 
 
@@ -19,6 +19,7 @@ class Service(ndb.Model):
     vendor_key = ndb.StringProperty()
     quota = ndb.IntegerProperty()
     balance = ndb.IntegerProperty(default=0)
+    unlimit = ndb.BooleanProperty(default=False)
     statics = ndb.JsonProperty(default=[])
     modified_at = ndb.DateTimeProperty(auto_now=True)
 
@@ -132,6 +133,8 @@ def call(id, action, body):
     method = provider.get_method(action)
     if not method:
         raise ServiceMethodNotFound("{} - {}".format(service.id, action))
+    if not service.unlimit and service.balance <= 0:
+        raise ServiceBalanceDepleted(id)
     res = request(
         service.vendor_key, service.statics, provider.config, method, body,
     )

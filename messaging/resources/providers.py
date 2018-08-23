@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from flask import request
-from google.appengine.api.datastore_errors import (
-    BadValueError, BadRequestError
-)
-from flask_restful import Resource, abort, fields, marshal_with, reqparse
+from flask_restful import Resource, fields, marshal_with, reqparse
 from functools import partial
 from toolz import compose, merge
 
-from messaging import helpers, error_responses
+from messaging import helpers
 from messaging.utils import omit, pick
 from messaging.models import providers
 
@@ -46,32 +43,20 @@ update_fields = filter(lambda x: x != id_field, create_fields)
 class Provider(Resource):
     @marshal_with(resource_fields)
     def get(self, id):
-        try:
-            return helpers.make_get(providers.Provider)(id)
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return helpers.make_get(providers.Provider)(id)
 
     @marshal_with(resource_fields)
     def put(self, id):
-        try:
-            return compose(
-                partial(
-                    helpers.make_update(providers.Provider, update_fields),
-                    id,
-                ),
-                request.get_json,
-            )()
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return compose(
+            partial(
+                helpers.make_update(providers.Provider, update_fields),
+                id,
+            ),
+            request.get_json,
+        )()
 
     def delete(self, id):
-        try:
-            return helpers.make_delete(providers.Provider)(id), 204
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
-
-    def post(self, id):
-        pass
+        return helpers.make_delete(providers.Provider)(id), 204
 
 
 class ProviderList(Resource):
@@ -81,23 +66,16 @@ class ProviderList(Resource):
 
     @marshal_with(resource_fields)
     def post(self):
-        try:
-            return compose(
-                helpers.make_create(
-                    providers.Provider, create_fields, id_field,
-                ),
-                request.get_json,
-            )(), 201
-        except (BadValueError, BadRequestError):
-            return abort(400, message=error_responses.INVALID_FIELD)
-        except ReferenceError:
-            return abort(409, message=error_responses.ALREADY_EXISTS)
+        return compose(
+            helpers.make_create(
+                providers.Provider, create_fields, id_field,
+            ),
+            request.get_json,
+        )(), 201
 
 
 method_parser = reqparse.RequestParser()
-method_parser.add_argument(
-    'action', required=True, help=error_responses.INVALID_FIELD,
-)
+method_parser.add_argument('action', required=True)
 method_parser.add_argument('method', choices=['GET', 'POST'])
 method_parser.add_argument('path')
 method_parser.add_argument('args', action='append')
@@ -112,28 +90,19 @@ single_method_fields = merge(
 class ProviderMethod(Resource):
     @marshal_with(single_method_fields)
     def get(self, id, action):
-        try:
-            return providers.get_method(id, action)
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return providers.get_method(id, action)
 
     def delete(self, id, action):
-        try:
-            return providers.remove_method(id, action), 204
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return providers.remove_method(id, action), 204
 
 
 class ProviderMethodPut(Resource):
     @marshal_with(single_method_fields)
     def post(self, id):
-        try:
-            return compose(
-                partial(providers.put_method, id),
-                method_parser.parse_args,
-            )()
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return compose(
+            partial(providers.put_method, id),
+            method_parser.parse_args,
+        )()
 
 
 config_parser = reqparse.RequestParser()
@@ -152,10 +121,7 @@ single_config_fields = pick(['name', 'config'], resource_fields)
 class ProviderConfigPut(Resource):
     @marshal_with(single_config_fields)
     def post(self, id):
-        try:
-            return compose(
-                partial(providers.put_config, id),
-                config_parser.parse_args,
-            )()
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return compose(
+            partial(providers.put_config, id),
+            config_parser.parse_args,
+        )()

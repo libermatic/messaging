@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
-from functools import reduce
 from toolz import assoc
 
 from messaging.utils import pick
+from messaging.exceptions import (
+    EntityAlreadyExists, EntityNotFound, InvalidField
+)
+
 
 QUERY_LIMIT = 10
 
@@ -14,8 +17,11 @@ def make_create(model, fields, id_field=None):
         raise TypeError('fields needs to be a list')
 
     def fn(body):
-        if id_field and model.get_by_id(body.get(id_field)):
-            raise ReferenceError()
+        try:
+            if id_field and model.get_by_id(body.get(id_field)):
+                raise EntityAlreadyExists(model.__name__)
+        except TypeError as e:
+            raise InvalidField(*e)
         field_kwargs = assoc(pick(fields, body), 'id', body.get(id_field)) \
             if id_field else pick(fields, body)
         entity = model(**field_kwargs)
@@ -26,10 +32,13 @@ def make_create(model, fields, id_field=None):
 
 def make_get(model, urlsafe=False):
     def fn(id):
-        entity = ndb.Key(urlsafe=id).get() \
-            if urlsafe else model.get_by_id(id)
+        try:
+            entity = ndb.Key(urlsafe=id).get() \
+                if urlsafe else model.get_by_id(id)
+        except TypeError as e:
+            raise InvalidField(*e)
         if not entity:
-            raise ReferenceError()
+            raise EntityNotFound(model.__name__)
         return entity.to_dict()
     return fn
 
@@ -45,10 +54,13 @@ def make_list(model):
 
 def make_update(model, fields, urlsafe=False):
     def fn(id, body):
-        entity = ndb.Key(urlsafe=id).get() \
-            if urlsafe else model.get_by_id(id)
+        try:
+            entity = ndb.Key(urlsafe=id).get() \
+                if urlsafe else model.get_by_id(id)
+        except TypeError as e:
+            raise InvalidField(*e)
         if not entity:
-            raise ReferenceError()
+            raise EntityNotFound(model.__name__)
         field_kwargs = pick(fields, body)
         if field_kwargs:
             entity.populate(**field_kwargs)
@@ -59,9 +71,12 @@ def make_update(model, fields, urlsafe=False):
 
 def make_delete(model, urlsafe=False):
     def fn(id):
-        entity = ndb.Key(urlsafe=id).get() \
-            if urlsafe else model.get_by_id(id)
+        try:
+            entity = ndb.Key(urlsafe=id).get() \
+                if urlsafe else model.get_by_id(id)
+        except TypeError as e:
+            raise InvalidField(*e)
         if not entity:
-            raise ReferenceError()
+            raise EntityNotFound(model.__name__)
         return entity.key.delete()
     return fn

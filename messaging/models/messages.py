@@ -4,6 +4,7 @@ from google.appengine.ext import ndb
 from toolz import merge
 
 from messaging import helpers
+from messaging.exceptions import ServiceCallFailure
 
 
 class Message(ndb.Model):
@@ -30,8 +31,10 @@ def create(service_key, body):
     )(
         merge(body, {'parent': service_key})
     )
-        raise IOError()
     if req_has_failed:
+        raise ServiceCallFailure(
+            "{} - {}".format(service_key.id(), message.get('id'))
+        )
     return message
 
 

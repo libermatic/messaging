@@ -3,6 +3,8 @@
 from google.appengine.ext import ndb
 from toolz import merge, dissoc
 
+from messaging.exceptions import EntityNotFound, ServiceMethodNotFound
+
 
 class Provider(ndb.Model):
     name = ndb.StringProperty(required=True)
@@ -30,17 +32,17 @@ class Provider(ndb.Model):
 def get_method(id, action):
     provider = Provider.get_by_id(id)
     if not provider:
-        raise ReferenceError()
+        raise EntityNotFound('Provider')
     method = provider.get_method(action)
     if not method:
-        raise ReferenceError()
+        raise ServiceMethodNotFound()
     return method
 
 
 def put_method(id, method):
     provider = Provider.get_by_id(id)
     if not provider:
-        raise ReferenceError()
+        raise EntityNotFound('Provider')
     action = method.get('action')
     provider.methods = merge(provider.methods or {}, {action: method})
     provider.put()
@@ -50,7 +52,7 @@ def put_method(id, method):
 def remove_method(id, action):
     provider = Provider.get_by_id(id)
     if not provider:
-        raise ReferenceError()
+        raise EntityNotFound('Provider')
     provider.methods = dissoc(provider.methods or {}, action)
     provider.put()
     return None
@@ -59,7 +61,7 @@ def remove_method(id, action):
 def put_config(id, config):
     provider = Provider.get_by_id(id)
     if not provider:
-        raise ReferenceError()
+        raise EntityNotFound('Provider')
     provider.config = merge(provider.config or {}, config)
     provider.put()
     return provider.to_dict()

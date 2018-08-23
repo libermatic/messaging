@@ -9,6 +9,7 @@ from messaging.resources.services \
     import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic, \
     ServiceAction
 from messaging.resources.messages import MessageList, MessageAll
+from messaging.exceptions import errors
 
 
 import requests_toolbelt.adapters.appengine
@@ -16,7 +17,7 @@ requests_toolbelt.adapters.appengine.monkeypatch()
 
 
 app = Flask(__name__)
-api = Api(app)
+api = Api(app, errors=errors)
 
 api.add_resource(AccountList, '/accounts')
 api.add_resource(Account, '/accounts/<string:id>')
@@ -32,7 +33,7 @@ api.add_resource(ServiceList, '/accounts/<string:site>/services')
 api.add_resource(ServiceAll, '/services')
 api.add_resource(Service, '/services/<string:id>')
 api.add_resource(ServiceStaticPut, '/services/<string:id>/static')
-api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceStatic, '/services/<string:id>/static/<string:field>')
+api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceAction, '/services/<string:id>/<string:action>')
 api.add_resource(MessageAll, '/messages')

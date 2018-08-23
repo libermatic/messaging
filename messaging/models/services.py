@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
+from toolz import merge, pluck
 
 from messaging import helpers
 from messaging.models.accounts import get_account_by_key
 from messaging.dispatch import request
 from messaging.models import messages
+from messaging.exceptions import (
+    EntityNotFound, ReferencedEntityNotFound,
+    ServiceUnauthorized, ServiceMethodNotFound,
+)
 
 
 class Service(ndb.Model):
@@ -44,9 +49,11 @@ class Service(ndb.Model):
 
 def create(fields, site, body):
     account = ndb.Key('Account', site)
+    if not account.get():
+        raise ReferencedEntityNotFound('Account')
     provider = ndb.Key('Provider', body.get('provider'))
-    if not account.get() or not provider.get():
-        raise ReferenceError()
+    if not provider.get():
+        raise ReferencedEntityNotFound('Provider')
     return helpers.make_create(
         Service, fields + ['parent'],
     )(
@@ -57,7 +64,7 @@ def create(fields, site, body):
 def update(fields, id, body):
     provider = body.get('provider')
     if provider and not ndb.Key('Provider', provider).get():
-        raise ReferenceError()
+        raise ReferencedEntityNotFound('Provider')
     return helpers.make_update(Service, fields, urlsafe=True)(
         id,
         merge(body, {'provider': ndb.Key('Provider', provider)})
@@ -75,7 +82,7 @@ def list_by_site(site):
 def put_static(id, static):
     service = ndb.Key(urlsafe=id).get()
     if not service:
-        raise ReferenceError()
+        raise EntityNotFound('Service')
     field = static.get('field')
     service.statics = filter(
         lambda x: x.get('field') != field, service.statics,
@@ -87,7 +94,7 @@ def put_static(id, static):
 def get_static(id, field):
     service = ndb.Key(urlsafe=id).get()
     if not service:
-        raise ReferenceError()
+        raise EntityNotFound('Service')
     static = service.get_static(field)
     if not static:
         raise ReferenceError()
@@ -97,7 +104,7 @@ def get_static(id, field):
 def remove_static(id, field):
     service = ndb.Key(urlsafe=id).get()
     if not service:
-        raise ReferenceError()
+        raise EntityNotFound('Service')
     service.statics = filter(
         lambda x: x.get('field') != field, service.statics,
     )
@@ -119,12 +126,12 @@ def _is_service_authorized(id, key=None):
 
 def call(id, action, body):
     if not _is_service_authorized(id, body.get('key')):
-        raise NameError
+        raise ServiceUnauthorized()
     service = ndb.Key(urlsafe=id).get()
     provider = service.provider.get()
     method = provider.get_method(action)
     if not method:
-        raise KeyError
+        raise ServiceMethodNotFound("{} - {}".format(service.id, action))
     res = request(
         service.vendor_key, service.statics, provider.config, method, body,
     )

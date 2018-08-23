@@ -4,6 +4,8 @@ import os
 import hashlib
 from google.appengine.ext import ndb
 
+from messaging.exceptions import EntityNotFound
+
 
 class Account(ndb.Model):
     site = ndb.StringProperty(required=True)
@@ -24,7 +26,7 @@ class Account(ndb.Model):
 def generate_api_key(id):
     account = Account.get_by_id(id)
     if not account:
-        raise ReferenceError()
+        raise EntityNotFound('Account')
     return account.generate_api_key()
 
 

@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from flask import request
-from google.appengine.api.datastore_errors import (
-    BadValueError, BadRequestError
-)
-from flask_restful import Resource, abort, fields, marshal_with, reqparse
+from flask_restful import Resource, fields, marshal_with, reqparse
 from functools import partial
 from toolz import compose, merge
 
 
-from messaging import helpers, error_responses
+from messaging import helpers
 from messaging.utils import omit, pick
 from messaging.models import services
 from messaging.resources import messages
@@ -39,26 +36,17 @@ update_fields = omit(
 class Service(Resource):
     @marshal_with(resource_fields)
     def get(self, id):
-        try:
-            return helpers.make_get(services.Service, urlsafe=True)(id)
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return helpers.make_get(services.Service, urlsafe=True)(id)
 
     @marshal_with(resource_fields)
     def put(self, id):
-        try:
-            return compose(
-                partial(services.update, update_fields, id),
-                request.get_json,
-            )()
-        except ReferenceError:
-            return abort(404, message=error_responses.REF_NOT_FOUND)
+        return compose(
+            partial(services.update, update_fields, id),
+            request.get_json,
+        )()
 
     def delete(self, id):
-        try:
-            return helpers.make_delete(services.Service, urlsafe=True)(id), 204
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return helpers.make_delete(services.Service, urlsafe=True)(id), 204
 
 
 class ServiceList(Resource):
@@ -68,15 +56,10 @@ class ServiceList(Resource):
 
     @marshal_with(resource_fields)
     def post(self, site):
-        try:
-            return compose(
-                partial(services.create, update_fields, site),
-                request.get_json,
-            )(), 201
-        except (BadValueError, BadRequestError):
-            return abort(400, message=error_responses.INVALID_FIELD)
-        except ReferenceError:
-            return abort(404, message=error_responses.REF_NOT_FOUND)
+        return compose(
+            partial(services.create, update_fields, site),
+            request.get_json,
+        )(), 201
 
 
 static_parser = reqparse.RequestParser()
@@ -95,28 +78,19 @@ single_static_fields = merge(
 class ServiceStatic(Resource):
     @marshal_with(single_static_fields)
     def get(self, id, field):
-        try:
-            return services.get_static(id, field)
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return services.get_static(id, field)
 
     def delete(self, id, field):
-        try:
-            return services.remove_static(id, field), 204
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return services.remove_static(id, field), 204
 
 
 class ServiceStaticPut(Resource):
     @marshal_with(single_static_fields)
     def post(self, id):
-        try:
-            return compose(
-                partial(services.put_static, id),
-                static_parser.parse_args,
-            )()
-        except ReferenceError:
-            return abort(404, message=error_responses.NOT_FOUND)
+        return compose(
+            partial(services.put_static, id),
+            static_parser.parse_args,
+        )()
 
 
 class ServiceAll(Resource):
@@ -128,14 +102,7 @@ class ServiceAll(Resource):
 class ServiceAction(Resource):
     @marshal_with(messages.resource_fields)
     def post(self, id, action):
-        try:
-            return compose(
-                partial(services.call, id, action),
-                request.get_json
-            )()
-        except NameError:
-            return abort(401, message=error_responses.UNAUTHORIZED)
-        except KeyError:
-            return abort(400, message=error_responses.UNKNOWN_ACTION)
-        except IOError:
-            return abort(503, message=error_responses.SERVICE_FAILURE)
+        return compose(
+            partial(services.call, id, action),
+            request.get_json
+        )()

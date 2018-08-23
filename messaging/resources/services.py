@@ -3,7 +3,7 @@
 from flask import request
 from flask_restful import Resource, fields, marshal_with, reqparse
 from functools import partial
-from toolz import compose, merge
+from toolz import compose, merge, get
 
 from messaging import helpers
 from messaging.utils import omit, pick
@@ -115,3 +115,23 @@ class ServiceAction(Resource):
             partial(services.call, id, action),
             _get_req_data,
         )(request)
+
+
+balance_parser = reqparse.RequestParser()
+balance_parser.add_argument('amount', type=int, required=True)
+
+balance_fields = pick(['id', 'name', 'quota', 'balance'], resource_fields)
+
+
+class ServiceBalance(Resource):
+    @marshal_with(balance_fields)
+    def get(self, id):
+        return services.reset_balance(id)
+
+    @marshal_with(balance_fields)
+    def post(self, id):
+        return compose(
+            partial(services.load_balance, id),
+            partial(get, 'amount'),
+            balance_parser.parse_args,
+        )()

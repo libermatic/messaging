@@ -132,6 +132,18 @@ A static field for the **Service**
 
 ### `DELETE /services/<string:id>/static/<string:field>`
 
+### `GET /services/<string:id>/balance`
+
+Resets `balance` to `quota` for the **Service**
+
+### `POST /services/<string:id>/balance`
+
+#### args
+
+- `amount`. Integer. Required.
+
+Loads `amount` to `balance` for the **Service**
+
 ### `POST /services/<string:id>/<string:action>`
 
 Attempts to execute a registered `action` for the **Service**.

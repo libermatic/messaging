@@ -142,3 +142,21 @@ def call(id, action, body):
             provider.balance = res.get('balance')
             provider.put()
     return messages.create(service.key, res)
+
+
+def reset_balance(id):
+    service = ndb.Key(urlsafe=id).get()
+    if not service:
+        raise EntityNotFound('Service')
+    service.balance = service.quota
+    service.put()
+    return service.to_dict()
+
+
+def load_balance(id, amount):
+    service = ndb.Key(urlsafe=id).get()
+    if not service:
+        raise EntityNotFound('Service')
+    service.balance += amount
+    service.put()
+    return service.to_dict()

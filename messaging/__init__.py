@@ -10,7 +10,7 @@ from messaging.resources.providers \
     ProviderConfigPut
 from messaging.resources.services \
     import Service, ServiceList, ServiceAll, ServiceStaticPut, ServiceStatic, \
-    ServiceAction
+    ServiceAction, ServiceBalance
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
 
@@ -43,6 +43,7 @@ api.add_resource(ServiceAll, '/services')
 api.add_resource(Service, '/services/<string:id>')
 api.add_resource(ServiceStaticPut, '/services/<string:id>/static')
 api.add_resource(ServiceStatic, '/services/<string:id>/static/<string:field>')
+api.add_resource(ServiceBalance, '/services/<string:id>/balance')
 api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceAction, '/services/<string:id>/<string:action>')
 api.add_resource(MessageAll, '/messages')

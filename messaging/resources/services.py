@@ -5,11 +5,12 @@ from flask_restful import Resource, fields, marshal_with, reqparse
 from functools import partial
 from toolz import compose, merge
 
-
 from messaging import helpers
 from messaging.utils import omit, pick
 from messaging.models import services
 from messaging.resources import messages
+from messaging.exceptions import UnsupportedContent
+
 
 static_fields = {
     'field': fields.String(),
@@ -99,10 +100,18 @@ class ServiceAll(Resource):
         return helpers.make_list(services.Service)()
 
 
+def _get_req_data(req):
+    if req.content_type == 'application/x-www-form-urlencoded':
+        return req.form
+    if req.content_type == 'application/json':
+        return req.get_json()
+    raise UnsupportedContent(req.content_type)
+
+
 class ServiceAction(Resource):
     @marshal_with(messages.resource_fields)
     def post(self, id, action):
         return compose(
             partial(services.call, id, action),
-            request.get_json
-        )()
+            _get_req_data,
+        )(request)

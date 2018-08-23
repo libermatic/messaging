@@ -33,6 +33,10 @@ class ServiceCallFailure(MessagingException):
     '''Raises when a call to service fails'''
 
 
+class UnsupportedContent(MessagingException):
+    '''Raises when the request content_type is not supported'''
+
+
 errors = {
     'EntityAlreadyExists': {
         'message': "Entity already exists.",
@@ -66,4 +70,8 @@ errors = {
         'message': "Unable to execute at this time.",
         'status': 503,
     },
+    'UnsupportedContent': {
+        'message': "Content Type is unsupported",
+        'status': 400,
+    }
 }

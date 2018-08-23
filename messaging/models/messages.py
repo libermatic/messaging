@@ -23,13 +23,15 @@ class Message(ndb.Model):
 
 
 def create(service_key, body):
+    req_has_failed = body.get('status') == 'failure'
+    fields = ['status', 'cost', 'parent']
     message = helpers.make_create(
-        Message, ['response', 'status', 'cost', 'parent'],
+        Message, fields + ['response'] if req_has_failed else fields,
     )(
         merge(body, {'parent': service_key})
     )
-    if body.get('status') == 'failure':
         raise IOError()
+    if req_has_failed:
     return message
 
 

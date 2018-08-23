@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
-from toolz import merge, concatv, pluck
 
 from messaging import helpers
 from messaging.models.accounts import get_account_by_key
@@ -49,7 +48,7 @@ def create(fields, site, body):
     if not account.get() or not provider.get():
         raise ReferenceError()
     return helpers.make_create(
-        Service, concatv(fields, ['parent']),
+        Service, fields + ['parent'],
     )(
         merge(body, {'provider': provider, 'parent': account})
     )

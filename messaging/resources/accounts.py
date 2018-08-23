@@ -6,10 +6,11 @@ from google.appengine.api.datastore_errors import (
 )
 from flask_restful import Resource, abort, fields, marshal_with
 from functools import partial
-from toolz import compose, remove
+from toolz import compose
 
 
 from messaging import helpers, error_responses
+from messaging.utils import omit
 from messaging.models import accounts
 
 
@@ -20,10 +21,9 @@ resource_fields = {
 }
 
 id_field = 'site'
-create_fields = remove(
-    lambda x: x == 'modified_at', resource_fields.keys()
-)
-update_fields = remove(lambda x: x == id_field, create_fields)
+fields_to_omit = ['modified_at']
+create_fields = omit(fields_to_omit, resource_fields).keys()
+update_fields = filter(lambda x: x != id_field, create_fields)
 
 
 class Account(Resource):

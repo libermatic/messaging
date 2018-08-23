@@ -6,10 +6,11 @@ from google.appengine.api.datastore_errors import (
 )
 from flask_restful import Resource, abort, fields, marshal_with, reqparse
 from functools import partial
-from toolz import compose, remove, concatv, keyfilter, merge
+from toolz import compose, merge
 
 
 from messaging import helpers, error_responses
+from messaging.utils import omit, pick
 from messaging.models import services
 from messaging.resources import messages
 
@@ -29,13 +30,10 @@ resource_fields = {
     'modified_at': fields.DateTime(dt_format='iso8601'),
 }
 
-update_fields = concatv(
-    remove(
-        lambda x: x in ['id', 'modified_at', 'account', 'balance', 'config'],
-        resource_fields.keys(),
-    ),
-    ['vendor_key']
-)
+update_fields = omit(
+    ['id', 'modified_at', 'account', 'balance', 'statics'],
+    resource_fields,
+).keys() + ['vendor_key']
 
 
 class Service(Resource):
@@ -89,7 +87,7 @@ static_parser.add_argument(
 )
 
 single_static_fields = merge(
-    keyfilter(lambda x: x in ['id', 'name'], resource_fields),
+    pick(['id', 'name'], resource_fields),
     static_fields,
 )
 

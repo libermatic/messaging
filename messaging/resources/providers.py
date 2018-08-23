@@ -6,9 +6,10 @@ from google.appengine.api.datastore_errors import (
 )
 from flask_restful import Resource, abort, fields, marshal_with, reqparse
 from functools import partial
-from toolz import compose, remove, keyfilter, merge
+from toolz import compose, merge
 
 from messaging import helpers, error_responses
+from messaging.utils import omit, pick
 from messaging.models import providers
 
 
@@ -37,11 +38,9 @@ resource_fields = {
 }
 
 id_field = 'name'
-create_fields = remove(
-    lambda x: x in ['methods', 'config', 'balance', 'modified_at'],
-    resource_fields.keys(),
-)
-update_fields = remove(lambda x: x == id_field, create_fields)
+fields_to_omit = ['methods', 'config', 'balance', 'modified_at']
+create_fields = omit(fields_to_omit, resource_fields).keys()
+update_fields = filter(lambda x: x != id_field, create_fields)
 
 
 class Provider(Resource):
@@ -105,7 +104,7 @@ method_parser.add_argument('args', action='append')
 
 
 single_method_fields = merge(
-    keyfilter(lambda x: x in ['name', 'base_url'], resource_fields),
+    pick(['name', 'base_url'], resource_fields),
     method_fields,
 )
 
@@ -147,9 +146,7 @@ config_parser.add_argument('error_field')
 config_parser.add_argument('cost_field')
 config_parser.add_argument('balance_field')
 
-single_config_fields = keyfilter(
-    lambda x: x in ['name', 'config'], resource_fields,
-)
+single_config_fields = pick(['name', 'config'], resource_fields)
 
 
 class ProviderConfigPut(Resource):

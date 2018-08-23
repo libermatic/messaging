@@ -5,6 +5,7 @@ from functools import reduce, partial
 from toolz import merge, assoc, valfilter
 
 from messaging.utils import pick
+from messaging.exceptions import ServiceCallFailure
 
 
 def _make_url(method):
@@ -83,23 +84,26 @@ def request(key, statics, config, method, body):
         'headers': headers,
     }
 
-    res = requests.request(**kwargs)
-    result = res.json()
+    try:
+        res = requests.request(**kwargs)
+        result = res.json()
 
-    contains_error_condition = _make_condition_check(config)
-    contains_error_field = _make_kv_check(config)
-    has_failed = not res.ok or \
-        contains_error_condition(result) or \
-        contains_error_field(result)
-    prices = _make_prices(config)
+        contains_error_condition = _make_condition_check(config)
+        contains_error_field = _make_kv_check(config)
+        has_failed = not res.ok or \
+            contains_error_condition(result) or \
+            contains_error_field(result)
+        prices = _make_prices(config)
 
-    return merge(
-        {
-            'status': 'failure' if has_failed else 'success',
-            'response': {
-                'status_code': res.status_code,
-                'content': result,
+        return merge(
+            {
+                'status': 'failure' if has_failed else 'success',
+                'response': {
+                    'status_code': res.status_code,
+                    'content': result,
+                },
             },
-        },
-        prices(result) if not has_failed else {},
-    )
+            prices(result) if not has_failed else {},
+        )
+    except (requests.ConnectionError, requests.Timeout) as e:
+        raise ServiceCallFailure(*e)

@@ -105,3 +105,8 @@ venv.bak/
 
 # datastore
 store/
+
+# Flask settings
+/settings/*
+!/settings/__init__.py
+!/settings/stub.py

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+import os
 from flask import Flask
 from flask_restful import Api
 
@@ -15,8 +18,14 @@ from messaging.exceptions import errors
 import requests_toolbelt.adapters.appengine
 requests_toolbelt.adapters.appengine.monkeypatch()
 
+env = 'prod' \
+    if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/') else \
+    'dev'
 
 app = Flask(__name__)
+app.config.from_object('settings.{env}.FlaskConfig'.format(env=env))
+
+
 api = Api(app, errors=errors)
 
 api.add_resource(AccountList, '/accounts')

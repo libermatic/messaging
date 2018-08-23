@@ -138,9 +138,10 @@ def call(id, action, body):
     res = request(
         service.vendor_key, service.statics, provider.config, method, body,
     )
-    if not service.unlimit and res.get('status') == 'success':
-        service.balance -= res.get('cost', 1)
-        service.put()
+    if res.get('status') == 'success':
+        if not service.unlimit:
+            service.balance -= res.get('cost', 1)
+            service.put()
         if res.get('balance'):
             provider.balance = res.get('balance')
             provider.put()

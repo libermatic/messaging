@@ -148,6 +148,13 @@ def call(id, action, body):
     return messages.create(service.key, res)
 
 
+def get_balance(id):
+    service = ndb.Key(urlsafe=id).get()
+    if not service:
+        raise EntityNotFound('Service')
+    return service.to_dict()
+
+
 def reset_balance(id):
     service = ndb.Key(urlsafe=id).get()
     if not service:

@@ -126,10 +126,12 @@ balance_fields = pick(['id', 'name', 'quota', 'balance'], resource_fields)
 class ServiceBalance(Resource):
     @marshal_with(balance_fields)
     def get(self, id):
-        return services.reset_balance(id)
+        return services.get_balance(id)
 
     @marshal_with(balance_fields)
     def post(self, id):
+        if compose(partial(get, 'reset'), balance_parser.parse_args)():
+            return services.reset_balance(id)
         return compose(
             partial(services.load_balance, id),
             partial(get, 'amount'),

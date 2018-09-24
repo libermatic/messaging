@@ -149,15 +149,17 @@ A static field for the **Service**
 
 ### `GET /services/<string:id>/balance`
 
-Resets `balance` to `quota` for the **Service**
+Returns `balance` and `quota` along with other fields.
 
 ### `POST /services/<string:id>/balance`
 
 #### args
 
 - `amount`. Integer. Required.
+- `reset`. Boolean. Required.
 
-Loads `amount` to `balance` for the **Service**
+Loads `amount` to `balance` for the **Service**. Or resets `balance` to `quota`
+for the **Service**. At least one if required.
 
 ### `POST /services/<string:id>/<string:action>`
 

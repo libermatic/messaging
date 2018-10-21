@@ -33,7 +33,7 @@ def create(service_key, body):
     )
     if req_has_failed:
         raise ServiceCallFailure(
-            "{} - {}".format(service_key.id(), message.get('id'))
+            "{} - {}: {}".format(service_key.id(), message.get('id'), body)
         )
     return message
 

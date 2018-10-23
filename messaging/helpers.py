@@ -16,7 +16,7 @@ def make_create(model, fields, id_field=None):
     if type(fields) is not list:
         raise TypeError('fields needs to be a list')
 
-    def fn(body):
+    def fn(body, as_obj=False):
         try:
             if id_field and model.get_by_id(body.get(id_field)):
                 raise EntityAlreadyExists(model.__name__)
@@ -26,7 +26,7 @@ def make_create(model, fields, id_field=None):
             if id_field else pick(fields, body)
         entity = model(**field_kwargs)
         entity.put()
-        return entity.to_dict()
+        return entity if as_obj else entity.to_dict()
     return fn
 
 

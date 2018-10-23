@@ -15,7 +15,7 @@ from messaging.exceptions import (
 
 class Service(ndb.Model):
     name = ndb.StringProperty(required=True)
-    provider = ndb.KeyProperty('Provider', required=True)
+    provider = ndb.KeyProperty(kind='Provider', required=True)
     vendor_key = ndb.StringProperty()
     quota = ndb.IntegerProperty()
     balance = ndb.IntegerProperty(default=0)
@@ -48,17 +48,19 @@ class Service(ndb.Model):
             return None
 
 
-def create(fields, site, body):
+def create(fields, site, body, **args):
     account = ndb.Key('Account', site)
     if not account.get():
-        raise ReferencedEntityNotFound('Account')
+        raise ReferencedEntityNotFound('Account {} not found'.format(site))
     provider = ndb.Key('Provider', body.get('provider'))
     if not provider.get():
-        raise ReferencedEntityNotFound('Provider')
+        raise ReferencedEntityNotFound(
+            'Provider {} not found'.format(body.get('provider'))
+        )
     return helpers.make_create(
         Service, fields + ['parent'],
     )(
-        merge(body, {'provider': provider, 'parent': account})
+        merge(body, {'provider': provider, 'parent': account}), **args
     )
 
 

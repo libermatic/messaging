@@ -3,6 +3,7 @@
 import os
 from flask import Flask
 from flask_restful import Api
+from flask_graphql import GraphQLView
 
 from messaging.resources.accounts import Account, AccountList, AccountKey
 from messaging.resources.providers \
@@ -13,6 +14,7 @@ from messaging.resources.services \
     ServiceAction, ServiceBalance
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
+from messaging.schema import schema
 
 
 import requests_toolbelt.adapters.appengine
@@ -47,3 +49,8 @@ api.add_resource(ServiceBalance, '/services/<string:id>/balance')
 api.add_resource(MessageList, '/services/<string:service>/messages')
 api.add_resource(ServiceAction, '/services/<string:id>/<string:action>')
 api.add_resource(MessageAll, '/messages')
+
+
+view_func = GraphQLView.as_view('graphql', schema=schema, graphiql=True)
+
+app.add_url_rule('/graphql', view_func=view_func)

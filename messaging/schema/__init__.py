@@ -5,7 +5,11 @@ from graphene_gae import NdbConnectionField
 from graphene import relay
 
 
-from messaging.schema.accounts import Account as AccountType, CreateAccount
+from messaging.schema.accounts import (
+    Account as AccountType,
+    CreateAccount,
+    CreateAccountKey,
+)
 from messaging.schema.providers import Provider as ProviderType, CreateProvider
 from messaging.schema.services import Service as ServiceType, CreateService
 from messaging.schema.messages import Message as MessageType
@@ -21,6 +25,7 @@ class Query(graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     createAccount = CreateAccount.Field()
+    createAccountKey = CreateAccountKey.Field()
     createProvider = CreateProvider.Field()
     createService = CreateService.Field()
 

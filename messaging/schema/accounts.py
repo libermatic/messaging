@@ -15,8 +15,8 @@ from messaging import helpers
 class Account(NdbObjectType):
     class Meta:
         model = AccountModel
-        exclude_fields = ('key_hash', )
-        interfaces = (relay.Node, )
+        exclude_fields = ("key_hash",)
+        interfaces = (relay.Node,)
 
     services = NdbConnectionField(ServiceType)
 
@@ -39,8 +39,6 @@ class CreateAccount(relay.ClientIDMutation):
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
         account = helpers.make_create(
-            AccountModel,
-            cls.Input._meta.fields.keys(),
-            'site'
+            AccountModel, cls.Input._meta.fields.keys(), "site"
         )(input, as_obj=True)
         return CreateAccount(account=account)

@@ -9,5 +9,5 @@ from messaging.models.messages import Message as MessageModel
 class Message(NdbObjectType):
     class Meta:
         model = MessageModel
-        exclude_fields = ('vendor_key', )
-        interfaces = (relay.Node, )
+        exclude_fields = ("vendor_key",)
+        interfaces = (relay.Node,)

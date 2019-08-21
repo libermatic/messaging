@@ -13,7 +13,7 @@ from messaging import helpers
 class Provider(NdbObjectType):
     class Meta:
         model = ProviderModel
-        interfaces = (relay.Node, )
+        interfaces = (relay.Node,)
 
     services = NdbConnectionField(ServiceType)
 
@@ -32,8 +32,6 @@ class CreateProvider(relay.ClientIDMutation):
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
         provider = helpers.make_create(
-            ProviderModel,
-            cls.Input._meta.fields.keys(),
-            'name'
+            ProviderModel, cls.Input._meta.fields.keys(), "name"
         )(input, as_obj=True)
         return CreateProvider(provider=provider)

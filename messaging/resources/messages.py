@@ -8,10 +8,10 @@ from messaging import helpers
 
 
 resource_fields = {
-    'id': fields.String,
-    'status': fields.String,
-    'cost': fields.Integer,
-    'modified_at': fields.DateTime(dt_format='iso8601'),
+    "id": fields.String,
+    "status": fields.String,
+    "cost": fields.Integer,
+    "modified_at": fields.DateTime(dt_format="iso8601"),
 }
 
 

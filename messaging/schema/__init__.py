@@ -2,6 +2,7 @@
 
 import graphene
 from graphene_gae import NdbConnectionField
+from graphene import relay
 
 
 from messaging.schema.accounts import Account as AccountType, CreateAccount
@@ -11,6 +12,7 @@ from messaging.schema.messages import Message as MessageType
 
 
 class Query(graphene.ObjectType):
+    node = relay.Node.Field()
     messages = NdbConnectionField(MessageType)
     services = NdbConnectionField(ServiceType)
     providers = NdbConnectionField(ProviderType)

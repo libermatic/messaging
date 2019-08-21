@@ -14,10 +14,10 @@ class Account(ndb.Model):
     key_hash = ndb.StringProperty()
 
     def to_dict(self):
-        return super(Account, self).to_dict(exclude=['key_hash'])
+        return super(Account, self).to_dict(exclude=["key_hash"])
 
     def generate_api_key(self):
-        api_key = os.urandom(24).encode('hex')
+        api_key = os.urandom(24).encode("hex")
         self.key_hash = hashlib.sha1(api_key).hexdigest()
         self.put()
         return api_key
@@ -26,7 +26,7 @@ class Account(ndb.Model):
 def generate_api_key(id):
     account = Account.get_by_id(id)
     if not account:
-        raise EntityNotFound('Account')
+        raise EntityNotFound("Account")
     return account.generate_api_key()
 
 

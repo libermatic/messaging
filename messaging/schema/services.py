@@ -13,8 +13,8 @@ from messaging.schema.messages import Message as MessageType
 class Service(NdbObjectType):
     class Meta:
         model = ServiceModel
-        exclude_fields = ('vendor_key', )
-        interfaces = (relay.Node, )
+        exclude_fields = ("vendor_key",)
+        interfaces = (relay.Node,)
 
     messages = NdbConnectionField(MessageType)
 
@@ -33,11 +33,11 @@ class CreateService(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        fields = filter(lambda x: x != 'site', cls.Input._meta.fields.keys())
+        fields = filter(lambda x: x != "site", cls.Input._meta.fields.keys())
         service = create(
             fields=fields,
-            site=input.get('site'),
-            body=dissoc(input, 'site'),
+            site=input.get("site"),
+            body=dissoc(input, "site"),
             as_obj=True,
         )
         return CreateService(service=service)

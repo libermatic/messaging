@@ -3,7 +3,12 @@
 from google.appengine.ext import ndb
 from toolz import merge, dissoc
 
-from messaging.exceptions import EntityNotFound, ServiceMethodNotFound
+from messaging import helpers
+from messaging.exceptions import (
+    EntityNotFound,
+    ReferencedEntityNotFound,
+    ServiceMethodNotFound,
+)
 
 
 class Provider(ndb.Model):
@@ -28,6 +33,14 @@ class Provider(ndb.Model):
             if method
             else None
         )
+
+
+def create(fields, user, body, **args):
+    if not user.get():
+        raise ReferencedEntityNotFound("User")
+    return helpers.make_create(Provider, fields + ["parent"], "name")(
+        merge(body, {"parent": user}), **args
+    )
 
 
 def get_method(id, action):

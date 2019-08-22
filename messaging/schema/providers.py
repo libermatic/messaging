@@ -4,10 +4,10 @@ import graphene
 from graphene import relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
-from messaging.models.providers import Provider as ProviderModel
+from messaging.models.providers import Provider as ProviderModel, create
 from messaging.models.services import Service as ServiceModel
 from messaging.schema.services import Service as ServiceType
-from messaging import helpers
+from messaging.exceptions import ExecutionUnauthorized
 
 
 class Provider(NdbObjectType):
@@ -31,7 +31,12 @@ class CreateProvider(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        provider = helpers.make_create(
-            ProviderModel, cls.Input._meta.fields.keys(), "name"
-        )(input, as_obj=True)
+        if not info.context.user_key:
+            raise ExecutionUnauthorized()
+        provider = create(
+            fields=cls.Input._meta.fields.keys(),
+            user=info.context.user_key,
+            body=input,
+            as_obj=True,
+        )
         return CreateProvider(provider=provider)

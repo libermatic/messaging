@@ -20,11 +20,14 @@ class Query(graphene.ObjectType):
     node = relay.Node.Field()
     messages = NdbConnectionField(MessageType)
     services = NdbConnectionField(ServiceType)
-    providers = NdbConnectionField(ProviderType)
-    accounts = NdbConnectionField(AccountType)
+
     me = graphene.Field(UserType, resolver=UserType.me_resolver)
+
     accounts = NdbConnectionField(AccountType)
     resolve_accounts = AccountType.accounts_resolver
+
+    providers = NdbConnectionField(ProviderType)
+    resolve_providers = ProviderType.providers_resolver
 
 
 class Mutation(graphene.ObjectType):

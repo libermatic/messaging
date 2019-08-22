@@ -20,6 +20,12 @@ class Provider(NdbObjectType):
     def resolve_services(self, info, **args):
         return ServiceModel.query().filter(ServiceModel.provider == self.key)
 
+    @classmethod
+    def providers_resolver(cls, root, info):
+        if not info.context.user_key:
+            raise ExecutionUnauthorized()
+        return ProviderModel.query(ancestor=info.context.user_key)
+
 
 class CreateProvider(relay.ClientIDMutation):
     class Input:

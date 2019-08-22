@@ -3,18 +3,20 @@
 import os
 import hashlib
 from google.appengine.ext import ndb
+from toolz import merge, pluck
 
-from messaging.exceptions import EntityNotFound
+from messaging import helpers
+from messaging.exceptions import EntityNotFound, ReferencedEntityNotFound
 
 
 class Account(ndb.Model):
     site = ndb.StringProperty(required=True)
     name = ndb.StringProperty()
-    password_hash = ndb.StringProperty()
+    user = ndb.KeyProperty(kind="User", required=True)
     modified_at = ndb.DateTimeProperty(auto_now=True)
     key_hash = ndb.StringProperty()
 
-    _excluded_keys = ["password_hash", "key_hash"]
+    _excluded_keys = ["key_hash"]
 
     def to_dict(self):
         return super(Account, self).to_dict(exclude=self._excluded_keys)
@@ -31,6 +33,14 @@ def generate_api_key(id):
     if not account:
         raise EntityNotFound("Account")
     return account.generate_api_key()
+
+
+def create(fields, user, body, **args):
+    if not user.get():
+        raise ReferencedEntityNotFound("User not found")
+    return helpers.make_create(Account, fields + ["parent"])(
+        merge(body, {"parent": user}), **args
+    )
 
 
 def get_account_by_key(key):

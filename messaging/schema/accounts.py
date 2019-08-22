@@ -31,6 +31,12 @@ class Account(NdbObjectType):
     def resolve_messages(self, info, **args):
         return MessageModel.query(ancestor=self.key)
 
+    @classmethod
+    def accounts_resolver(cls, root, info):
+        if not info.context.user_key:
+            raise ExecutionUnauthorized()
+        return AccountModel.query(ancestor=info.context.user_key)
+
 
 class CreateAccount(relay.ClientIDMutation):
     class Input:

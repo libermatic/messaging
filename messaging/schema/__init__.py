@@ -23,6 +23,8 @@ class Query(graphene.ObjectType):
     providers = NdbConnectionField(ProviderType)
     accounts = NdbConnectionField(AccountType)
     me = graphene.Field(UserType, resolver=UserType.me_resolver)
+    accounts = NdbConnectionField(AccountType)
+    resolve_accounts = AccountType.accounts_resolver
 
 
 class Mutation(graphene.ObjectType):

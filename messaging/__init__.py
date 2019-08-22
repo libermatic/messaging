@@ -5,6 +5,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_graphql import GraphQLView
 from flask_jwt_extended import JWTManager, jwt_optional
+from google.appengine.ext import ndb
 
 from messaging.resources.accounts import Account, AccountList, AccountKey
 from messaging.resources.providers import (
@@ -26,6 +27,7 @@ from messaging.resources.services import (
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
 from messaging.schema import schema
+from messaging.schema.auth import auth_middleware
 
 
 import requests_toolbelt.adapters.appengine
@@ -45,14 +47,9 @@ app.config.from_object("settings.{env}.FlaskConfig".format(env=env))
 jwt = JWTManager(app)
 
 
-@jwt.user_claims_loader
-def add_claims_to_access_token(identity):
-    return {"site": identity.site}
-
-
-@jwt.user_identity_loader
-def make_identity_for_access_token(identity):
-    return identity.uid
+@jwt.user_loader_callback_loader
+def load_user(uid):
+    return ndb.Key(urlsafe=uid)
 
 
 api = Api(app, errors=errors)
@@ -75,6 +72,8 @@ api.add_resource(MessageList, "/services/<string:service>/messages")
 api.add_resource(ServiceAction, "/services/<string:id>/<string:action>")
 api.add_resource(MessageAll, "/messages")
 
-view_func = GraphQLView.as_view("graphql", schema=schema, graphiql=False)
+view_func = GraphQLView.as_view(
+    "graphql", schema=schema, graphiql=False, middleware=[auth_middleware]
+)
 
 app.add_url_rule("/graphql", view_func=jwt_optional(view_func))

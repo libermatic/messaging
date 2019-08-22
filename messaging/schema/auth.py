@@ -71,3 +71,8 @@ class Login(relay.ClientIDMutation):
             raise InvalidCredential("Account")
         access_token = create_access_token(identity=user.key.urlsale())
         return Login(access_token=access_token)
+
+
+def auth_middleware(next, root, info, **args):
+    info.context.user_key = get_current_user()
+    return next(root, info, **args)

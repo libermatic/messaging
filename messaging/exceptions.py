@@ -1,24 +1,57 @@
 # -*- coding: utf-8 -*-
+from graphql import GraphQLError
+
+
+class ExecutionUnauthorized(GraphQLError):
+    """
+        Raises when the operation requires authorization and none is found in the
+        context
+    """
+
+    def __init__(self, message=None, **args):
+        super(ExecutionUnauthorized, self).__init__(
+            message or "Unauthorized execution", **args
+        )
+
+
+class InvalidCredential(GraphQLError):
+    """Raises site and password does not match"""
+
+    def __init__(self, message=None, **args):
+        super(InvalidCredential, self).__init__(
+            message or "Invalid credentials", **args
+        )
+
+
+class EntityAlreadyExists(GraphQLError):
+    """Raises when entity already exists in store"""
+
+    def __init__(self, entity, message=None, **args):
+        super(EntityAlreadyExists, self).__init__(
+            message or "Entity already exists for {}".format(entity), **args
+        )
+
+
+class EntityNotFound(GraphQLError):
+    """Raises when entity does not exists in store"""
+
+    def __init__(self, entity, message=None, **args):
+        super(EntityNotFound, self).__init__(
+            message or "Entity not found for {}".format(entity), **args
+        )
+
+
+class ReferencedEntityNotFound(GraphQLError):
+    """Raises when a referenced entity is not found in store"""
+
+    def __init__(self, entity, message=None, **args):
+        super(ReferencedEntityNotFound, self).__init__(
+            message or "Reference not found for to Entity {}".format(entity), **args
+        )
 
 
 class MessagingException(Exception):
     """Base exception"""
-
-
-class InvalidCredential(MessagingException):
-    """Raises site and password does not match"""
-
-
-class EntityAlreadyExists(MessagingException):
-    """Raises when entity already exists in store"""
-
-
-class EntityNotFound(MessagingException):
-    """Raises when entity does not exists in store"""
-
-
-class ReferencedEntityNotFound(EntityNotFound):
-    """Raises when a referenced entity is not found in store"""
 
 
 class InvalidField(MessagingException):

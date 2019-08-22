@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from werkzeug.security import generate_password_hash
 from google.appengine.ext import ndb
 import graphene
 from graphene import relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 from functools import partial
-from toolz import compose, get
+from toolz import compose, get, merge
 
 from messaging.models.accounts import Account as AccountModel, generate_api_key
 from messaging.models.services import Service as ServiceModel
@@ -13,12 +14,13 @@ from messaging.models.messages import Message as MessageModel
 from messaging.schema.services import Service as ServiceType
 from messaging.schema.messages import Message as MessageType
 from messaging import helpers
+from messaging.utils import pick
 
 
 class Account(NdbObjectType):
     class Meta:
         model = AccountModel
-        exclude_fields = ("key_hash",)
+        exclude_fields = AccountModel._excluded_keys
         interfaces = (relay.Node,)
 
     services = NdbConnectionField(ServiceType)
@@ -35,15 +37,24 @@ class Account(NdbObjectType):
 class CreateAccount(relay.ClientIDMutation):
     class Input:
         site = graphene.String(required=True)
+        password = graphene.String(required=True)
         name = graphene.String(required=True)
 
     account = graphene.Field(Account)
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
+        fields = merge(
+            pick(["site", "name"], input),
+            {
+                "password_hash": generate_password_hash(
+                    input.get("password"), method="sha256"
+                )
+            },
+        )
         account = helpers.make_create(
-            AccountModel, cls.Input._meta.fields.keys(), "site"
-        )(input, as_obj=True)
+            AccountModel, ["site", "name", "password_hash"], "site"
+        )(fields, as_obj=True)
         return CreateAccount(account=account)
 
 

@@ -14,8 +14,10 @@ class Account(ndb.Model):
     modified_at = ndb.DateTimeProperty(auto_now=True)
     key_hash = ndb.StringProperty()
 
+    _excluded_keys = ["password_hash", "key_hash"]
+
     def to_dict(self):
-        return super(Account, self).to_dict(exclude=["key_hash"])
+        return super(Account, self).to_dict(exclude=self._excluded_keys)
 
     def generate_api_key(self):
         api_key = os.urandom(24).encode("hex")

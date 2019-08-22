@@ -10,6 +10,13 @@ from messaging.exceptions import EntityAlreadyExists, EntityNotFound, InvalidFie
 QUERY_LIMIT = 10
 
 
+def get_entity(model, id):
+    entity = id.get() if isinstance(id, ndb.Key) else model.get_by_id(id)
+    if not entity:
+        raise EntityNotFound(model.__name__)
+    return entity
+
+
 def make_create(model, fields, id_field=None):
     if type(fields) is not list:
         raise TypeError("fields needs to be a list")

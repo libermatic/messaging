@@ -6,7 +6,7 @@ from google.appengine.ext import ndb
 from toolz import merge
 
 from messaging import helpers
-from messaging.exceptions import EntityNotFound, ReferencedEntityNotFound
+from messaging.exceptions import ReferencedEntityNotFound
 
 
 class Account(ndb.Model):
@@ -28,9 +28,7 @@ class Account(ndb.Model):
 
 
 def generate_api_key(id):
-    account = id.get() if isinstance(id, ndb.Key) else Account.get_by_id(id)
-    if not account:
-        raise EntityNotFound("Account")
+    account = helpers.get_entity(Account, id)
     return account.generate_api_key()
 
 

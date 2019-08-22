@@ -69,7 +69,7 @@ class Login(relay.ClientIDMutation):
         user = UserModel.get_by_id(email)
         if not user or not check_password_hash(user.password_hash, password):
             raise InvalidCredential("Account")
-        access_token = create_access_token(identity=user.key.urlsale())
+        access_token = create_access_token(identity=user.key.urlsafe())
         return Login(access_token=access_token)
 
 

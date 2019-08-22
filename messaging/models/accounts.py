@@ -3,7 +3,7 @@
 import os
 import hashlib
 from google.appengine.ext import ndb
-from toolz import merge, pluck
+from toolz import merge
 
 from messaging import helpers
 from messaging.exceptions import EntityNotFound, ReferencedEntityNotFound
@@ -12,7 +12,6 @@ from messaging.exceptions import EntityNotFound, ReferencedEntityNotFound
 class Account(ndb.Model):
     site = ndb.StringProperty(required=True)
     name = ndb.StringProperty()
-    user = ndb.KeyProperty(kind="User", required=True)
     modified_at = ndb.DateTimeProperty(auto_now=True)
     key_hash = ndb.StringProperty()
 
@@ -29,7 +28,7 @@ class Account(ndb.Model):
 
 
 def generate_api_key(id):
-    account = Account.get_by_id(id)
+    account = id.get() if isinstance(id, ndb.Key) else Account.get_by_id(id)
     if not account:
         raise EntityNotFound("Account")
     return account.generate_api_key()
@@ -37,8 +36,8 @@ def generate_api_key(id):
 
 def create(fields, user, body, **args):
     if not user.get():
-        raise ReferencedEntityNotFound("User not found")
-    return helpers.make_create(Account, fields + ["parent"])(
+        raise ReferencedEntityNotFound("User")
+    return helpers.make_create(Account, fields + ["parent"], "site")(
         merge(body, {"parent": user}), **args
     )
 

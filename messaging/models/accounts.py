@@ -10,6 +10,7 @@ from messaging.exceptions import EntityNotFound
 class Account(ndb.Model):
     site = ndb.StringProperty(required=True)
     name = ndb.StringProperty()
+    password_hash = ndb.StringProperty()
     modified_at = ndb.DateTimeProperty(auto_now=True)
     key_hash = ndb.StringProperty()
 

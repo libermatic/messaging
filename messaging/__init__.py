@@ -4,6 +4,7 @@ import os
 from flask import Flask
 from flask_restful import Api
 from flask_graphql import GraphQLView
+from flask_jwt_extended import JWTManager, jwt_optional
 
 from messaging.resources.accounts import Account, AccountList, AccountKey
 from messaging.resources.providers import (
@@ -37,8 +38,21 @@ env = (
     else "dev"
 )
 
+
 app = Flask(__name__)
 app.config.from_object("settings.{env}.FlaskConfig".format(env=env))
+
+jwt = JWTManager(app)
+
+
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+    return {"site": identity.site}
+
+
+@jwt.user_identity_loader
+def make_identity_for_access_token(identity):
+    return identity.uid
 
 
 api = Api(app, errors=errors)
@@ -61,7 +75,6 @@ api.add_resource(MessageList, "/services/<string:service>/messages")
 api.add_resource(ServiceAction, "/services/<string:id>/<string:action>")
 api.add_resource(MessageAll, "/messages")
 
+view_func = GraphQLView.as_view("graphql", schema=schema, graphiql=False)
 
-view_func = GraphQLView.as_view("graphql", schema=schema, graphiql=True)
-
-app.add_url_rule("/graphql", view_func=view_func)
+app.add_url_rule("/graphql", view_func=jwt_optional(view_func))

@@ -73,6 +73,14 @@ class Login(relay.ClientIDMutation):
         return Login(access_token=access_token)
 
 
+class Logout(relay.ClientIDMutation):
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        if not info.context.user_key:
+            raise ExecutionUnauthorized
+        return Logout()
+
+
 def auth_middleware(next, root, info, **args):
     info.context.user_key = get_current_user()
     return next(root, info, **args)

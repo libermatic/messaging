@@ -28,6 +28,7 @@ class Query(graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     signUp = SignUp.Field()
     login = Login.Field()
+    logout = Logout.Field()
     createAccount = CreateAccount.Field()
     createAccountKey = CreateAccountKey.Field()
     createProvider = CreateProvider.Field()

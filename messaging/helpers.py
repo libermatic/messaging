@@ -33,14 +33,14 @@ def make_create(model, fields, id_field=None):
 
 
 def make_get(model, urlsafe=False):
-    def fn(id):
+    def fn(id, as_obj=False):
         try:
             entity = ndb.Key(urlsafe=id).get() if urlsafe else model.get_by_id(id)
         except TypeError as e:
             raise InvalidField(*e)
         if not entity:
             raise EntityNotFound(model.__name__)
-        return entity.to_dict()
+        return entity if as_obj else entity.to_dict()
 
     return fn
 
@@ -54,7 +54,7 @@ def make_list(model):
 
 
 def make_update(model, fields, urlsafe=False):
-    def fn(id, body):
+    def fn(id, body, as_obj=False):
         try:
             entity = ndb.Key(urlsafe=id).get() if urlsafe else model.get_by_id(id)
         except TypeError as e:
@@ -65,7 +65,7 @@ def make_update(model, fields, urlsafe=False):
         if field_kwargs:
             entity.populate(**field_kwargs)
             entity.put()
-        return entity.to_dict()
+        return entity if as_obj else entity.to_dict()
 
     return fn
 

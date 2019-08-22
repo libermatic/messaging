@@ -10,6 +10,7 @@ from messaging.schema.accounts import (
     CreateAccount,
     CreateAccountKey,
 )
+from messaging.schema.auth import Login
 from messaging.schema.providers import Provider as ProviderType, CreateProvider
 from messaging.schema.services import Service as ServiceType, CreateService
 from messaging.schema.messages import Message as MessageType
@@ -25,6 +26,7 @@ class Query(graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     createAccount = CreateAccount.Field()
+    login = Login.Field()
     createAccountKey = CreateAccountKey.Field()
     createProvider = CreateProvider.Field()
     createService = CreateService.Field()

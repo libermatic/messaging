@@ -5,6 +5,10 @@ class MessagingException(Exception):
     """Base exception"""
 
 
+class InvalidCredential(MessagingException):
+    """Raises site and password does not match"""
+
+
 class EntityAlreadyExists(MessagingException):
     """Raises when entity already exists in store"""
 

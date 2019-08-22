@@ -4,14 +4,15 @@ from google.appengine.ext import ndb
 import graphene
 from graphene import relay
 from graphene_gae import NdbObjectType, NdbConnectionField
+from functools import partial
+from toolz import compose, get
 
 from messaging.models.accounts import Account as AccountModel, create, generate_api_key
 from messaging.models.services import Service as ServiceModel
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.services import Service as ServiceType
 from messaging.schema.messages import Message as MessageType
-from messaging import helpers
-from messaging.exceptions import InvalidCredential, ExecutionUnauthorized
+from messaging.exceptions import ExecutionUnauthorized
 
 
 class Account(NdbObjectType):
@@ -53,13 +54,23 @@ class CreateAccount(relay.ClientIDMutation):
 
 class CreateAccountKey(relay.ClientIDMutation):
     class Input:
-        pass
+        id = graphene.ID(required=True)
 
     key = graphene.String()
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
         if not info.context.user_key:
-            raise ExecutionUnauthorized()
-        key = generate_api_key(info.context.user_key.id())
+            raise ExecutionUnauthorized
+
+        account_key = compose(
+            lambda x: ndb.Key(urlsafe=x),
+            lambda x: x[1],
+            relay.Node.from_global_id,
+            partial(get, "id"),
+        )(input)
+
+        if account_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        key = generate_api_key(account_key)
         return CreateAccountKey(key=key)

@@ -22,8 +22,6 @@ class Provider(NdbObjectType):
 
     @classmethod
     def providers_resolver(cls, root, info):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized()
         return ProviderModel.query(ancestor=info.context.user_key)
 
 
@@ -37,8 +35,6 @@ class CreateProvider(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized()
         provider = create(
             fields=cls.Input._meta.fields.keys(),
             user=info.context.user_key,

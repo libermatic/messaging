@@ -33,8 +33,6 @@ class Account(NdbObjectType):
 
     @classmethod
     def accounts_resolver(cls, root, info):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized()
         return AccountModel.query(ancestor=info.context.user_key)
 
 
@@ -47,8 +45,6 @@ class CreateAccount(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized()
         account = create(
             fields=cls.Input._meta.fields.keys(),
             user=info.context.user_key,
@@ -66,9 +62,6 @@ class CreateAccountKey(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized
-
         account_key = compose(
             lambda x: ndb.Key(urlsafe=x),
             lambda x: x[1],

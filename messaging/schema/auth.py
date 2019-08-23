@@ -12,7 +12,7 @@ from messaging.models.accounts import Account as AccountModel
 from messaging.schema.accounts import Account as AccountType
 from messaging import helpers
 from messaging.utils import pick
-from messaging.exceptions import InvalidCredential, ExecutionUnauthorized
+from messaging.exceptions import InvalidCredential
 
 
 class User(NdbObjectType):
@@ -23,8 +23,6 @@ class User(NdbObjectType):
 
     @classmethod
     def me_resolver(cls, root, info):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized()
         return info.context.user_key.get()
 
     accounts = NdbConnectionField(AccountType)
@@ -76,8 +74,6 @@ class Login(relay.ClientIDMutation):
 class Logout(relay.ClientIDMutation):
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        if not info.context.user_key:
-            raise ExecutionUnauthorized
         return Logout()
 
 

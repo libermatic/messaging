@@ -18,7 +18,11 @@ from messaging.schema.providers import (
     DeleteProviderMethod,
     UpdateProviderConfig,
 )
-from messaging.schema.services import Service as ServiceType, CreateService
+from messaging.schema.services import (
+    Service as ServiceType,
+    CreateService,
+    UpdateService,
+)
 from messaging.schema.messages import Message as MessageType
 
 
@@ -46,6 +50,7 @@ class Mutation(graphene.ObjectType):
     deleteProviderMethod = DeleteProviderMethod.Field()
     updateProviderConfig = UpdateProviderConfig.Field()
     createService = CreateService.Field()
+    updateService = UpdateService.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

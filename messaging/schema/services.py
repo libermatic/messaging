@@ -4,7 +4,7 @@ import graphene
 from graphene import AbstractType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
-from messaging.models.services import Service as ServiceModel, create
+from messaging.models.services import Service as ServiceModel, create, update
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.messages import Message as MessageType
 from messaging.utils import pick
@@ -54,3 +54,29 @@ class CreateService(relay.ClientIDMutation):
             as_obj=True,
         )
         return CreateService(service=service)
+
+
+class UpdateService(relay.ClientIDMutation):
+    class Input(ServiceInput):
+        id = graphene.ID(required=True)
+
+    service = graphene.Field(Service)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        def check_and_get_provider():
+            if not input.get("provider"):
+                return None
+            provider_key = get_key(input.get("provider"))
+            if provider_key.parent() != info.context.user_key:
+                raise ExecutionUnauthorized
+            return provider_key
+
+        service = update(
+            fields=filter(cls.Input._meta.fields.keys()),
+            id=input.get("id"),
+            provider=check_and_get_provider(),
+            body=pick(["name", "quota"], input),
+            as_obj=True,
+        )
+        return UpdateService(service=service)

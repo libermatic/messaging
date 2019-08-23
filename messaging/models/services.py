@@ -59,13 +59,11 @@ def create(fields, account, provider, body, **args):
     )
 
 
-def update(fields, id, body):
-    provider = body.get("provider")
-    if provider and not ndb.Key("Provider", provider).get():
+def update(fields, id, provider, body):
+    if provider and not provider.get():
         raise ReferencedEntityNotFound("Provider")
-    return helpers.make_update(Service, fields, urlsafe=True)(
-        id,
-        merge(body, {"provider": ndb.Key("Provider", provider)}) if provider else body,
+    return helpers.make_update(Service, fields, key=True)(
+        id, merge(body, {"provider": provider}) if provider else body
     )
 
 

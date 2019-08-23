@@ -66,10 +66,16 @@ def make_list(model):
     return fn
 
 
-def make_update(model, fields, urlsafe=False):
+def make_update(model, fields, key=False, urlsafe=False):
     def fn(id, body, as_obj=False):
         try:
-            entity = ndb.Key(urlsafe=id).get() if urlsafe else model.get_by_id(id)
+            entity = (
+                id.get()
+                if key
+                else ndb.Key(urlsafe=id).get()
+                if urlsafe
+                else model.get_by_id(id)
+            )
         except TypeError as e:
             raise InvalidField(*e)
         if not entity:

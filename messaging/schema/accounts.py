@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from google.appengine.ext import ndb
 import graphene
 from graphene import relay
 from graphene_gae import NdbObjectType, NdbConnectionField
-from functools import partial
-from toolz import compose, get
 
 from messaging.models.accounts import Account as AccountModel, create, generate_api_key
 from messaging.models.services import Service as ServiceModel

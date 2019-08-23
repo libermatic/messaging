@@ -4,11 +4,7 @@ from google.appengine.ext import ndb
 from toolz import merge, dissoc
 
 from messaging import helpers
-from messaging.exceptions import (
-    EntityNotFound,
-    ReferencedEntityNotFound,
-    ServiceMethodNotFound,
-)
+from messaging.exceptions import ReferencedEntityNotFound, ServiceMethodNotFound
 
 
 class Provider(ndb.Model):

@@ -72,10 +72,14 @@ class Provider(NdbObjectType):
         return ProviderModel.query(ancestor=info.context.user_key)
 
 
+class ProviderType(graphene.Enum):
+    TEXT = "text"
+
+
 class CreateProvider(relay.ClientIDMutation):
     class Input:
         name = graphene.String(required=True)
-        type = graphene.String()
+        type = ProviderType()
         base_url = graphene.String(required=True)
 
     provider = graphene.Field(Provider)

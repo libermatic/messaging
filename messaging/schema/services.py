@@ -45,6 +45,10 @@ class Service(NdbObjectType):
     def resolve_messages(self, info, **args):
         return MessageModel.query(ancestor=self.key)
 
+    @classmethod
+    def services_resolver(cls, root, info):
+        return ServiceModel.query(ancestor=info.context.user_key)
+
 
 class CreateService(relay.ClientIDMutation):
     class Input:

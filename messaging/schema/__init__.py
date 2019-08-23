@@ -32,7 +32,6 @@ from messaging.schema.messages import Message as MessageType
 class Query(graphene.ObjectType):
     node = relay.Node.Field()
     messages = NdbConnectionField(MessageType)
-    services = NdbConnectionField(ServiceType)
 
     me = graphene.Field(UserType, resolver=UserType.me_resolver)
 
@@ -41,6 +40,9 @@ class Query(graphene.ObjectType):
 
     providers = NdbConnectionField(ProviderType)
     resolve_providers = ProviderType.providers_resolver
+
+    services = NdbConnectionField(ServiceType)
+    resolve_services = ServiceType.services_resolver
 
 
 class Mutation(graphene.ObjectType):

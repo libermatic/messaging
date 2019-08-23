@@ -9,7 +9,9 @@ from toolz import merge
 
 from messaging.models.user import User as UserModel
 from messaging.models.accounts import Account as AccountModel
+from messaging.models.providers import Provider as ProviderModel
 from messaging.schema.accounts import Account as AccountType
+from messaging.schema.providers import Provider as ProviderType
 from messaging import helpers
 from messaging.utils import pick
 from messaging.exceptions import InvalidCredential
@@ -29,6 +31,11 @@ class User(NdbObjectType):
 
     def resolve_accounts(self, info, **args):
         return AccountModel.query(ancestor=self.key)
+
+    providers = NdbConnectionField(ProviderType)
+
+    def resolve_providers(self, info, **args):
+        return ProviderModel.query(ancestor=self.key)
 
 
 class SignUp(relay.ClientIDMutation):

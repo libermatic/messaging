@@ -5,7 +5,7 @@ from graphene_gae import NdbConnectionField
 from graphene import relay
 
 
-from messaging.schema.auth import User as UserType, SignUp, Login, Logout
+from messaging.schema.auth import User as UserType, SignUp, Logout
 from messaging.schema.accounts import (
     Account as AccountType,
     CreateAccount,
@@ -32,7 +32,6 @@ class Query(graphene.ObjectType):
 
 class Mutation(graphene.ObjectType):
     signUp = SignUp.Field()
-    login = Login.Field()
     logout = Logout.Field()
     createAccount = CreateAccount.Field()
     createAccountKey = CreateAccountKey.Field()

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-from flask import Flask
+from flask import Flask, request, jsonify, abort
 from flask_restful import Api
 from flask_graphql import GraphQLView
 from flask_jwt_extended import JWTManager, jwt_optional
 from google.appengine.ext import ndb
 
+from messaging.schema.auth import auth_middleware, do_login
 from messaging.resources.accounts import Account, AccountList, AccountKey
 from messaging.resources.providers import (
     Provider,
@@ -27,7 +28,6 @@ from messaging.resources.services import (
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
 from messaging.schema import schema
-from messaging.schema.auth import auth_middleware
 
 
 import requests_toolbelt.adapters.appengine
@@ -74,6 +74,16 @@ api.add_resource(MessageAll, "/messages")
 
 view_func = GraphQLView.as_view(
     "graphql", schema=schema, graphiql=False, middleware=[auth_middleware]
+
+@app.route("/login", methods=["POST"])
+def login():
+    try:
+        access_token = do_login(request)
+        return jsonify({"access_token": access_token})
+    except Exception as e:
+        if type(e).__name__ == "InvalidCredential":
+            abort(401)
+        raise e
 )
 
 app.add_url_rule("/graphql", view_func=jwt_optional(view_func))

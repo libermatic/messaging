@@ -25,6 +25,7 @@ from messaging.resources.services import (
     ServiceStatic,
     ServiceAction,
     ServiceBalance,
+    get_balance,
 )
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
@@ -75,6 +76,9 @@ api.add_resource(MessageAll, "/messages")
 
 
 app.add_url_rule("/login", view_func=login, methods=["POST"])
+app.add_url_rule(
+    "/services/<string:id>/balance", view_func=get_balance, methods=["GET"]
+)
 app.add_url_rule(
     "/graf",
     view_func=jwt_required(

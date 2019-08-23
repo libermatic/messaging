@@ -3,6 +3,7 @@
 from google.appengine.ext import ndb
 from toolz import merge, pluck
 
+from messaging.utils import pick
 from messaging import helpers
 from messaging.models.accounts import get_account_by_key
 from messaging.dispatch import request
@@ -142,10 +143,8 @@ def call(id, action, body):
 
 
 def get_balance(id):
-    service = ndb.Key(urlsafe=id).get()
-    if not service:
-        raise EntityNotFound("Service")
-    return service.to_dict()
+    service = helpers.get_entity(Service, id, urlsafe=True)
+    return pick(["id", "balance", "quota"], service.to_dict())
 
 
 def reset_balance(id):

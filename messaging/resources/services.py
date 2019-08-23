@@ -90,6 +90,10 @@ class ServiceAll(Resource):
         return helpers.make_list(services.Service)()
 
 
+def get_balance(id):
+    return services.get_balance(id)
+
+
 def _get_req_data(req):
     if req.content_type == "application/x-www-form-urlencoded":
         return req.form

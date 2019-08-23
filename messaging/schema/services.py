@@ -1,15 +1,30 @@
 # -*- coding: utf-8 -*-
 
 import graphene
-from graphene import AbstractType, relay
+from graphene import AbstractType, ObjectType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
-from messaging.models.services import Service as ServiceModel, create, update
+from messaging.models.services import (
+    Service as ServiceModel,
+    create,
+    update,
+    put_static,
+)
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.messages import Message as MessageType
 from messaging.utils import pick
-from messaging.helpers import get_key
+from messaging.helpers import ParamLocation, get_key
 from messaging.exceptions import ExecutionUnauthorized
+
+
+class ServiceStaticAbstract(AbstractType):
+    field = graphene.String(required=True)
+    value = graphene.String(required=True)
+    location = ParamLocation(required=True)
+
+
+class ServiceStatic(ObjectType, ServiceStaticAbstract):
+    pass
 
 
 class Service(NdbObjectType):
@@ -17,6 +32,11 @@ class Service(NdbObjectType):
         model = ServiceModel
         exclude_fields = ("vendor_key",)
         interfaces = (relay.Node,)
+
+    statics = graphene.List(ServiceStatic)
+
+    def resolve_statics(self, info, **args):
+        return self.statics
 
     messages = NdbConnectionField(MessageType)
 
@@ -84,3 +104,20 @@ class UpdateService(relay.ClientIDMutation):
             as_obj=True,
         )
         return UpdateService(service=service)
+
+
+class UpdateServiceStatic(relay.ClientIDMutation):
+    class Input(ServiceStaticAbstract):
+        id = graphene.ID(required=True)
+
+    service = graphene.Field(Service)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        service_key = get_key(input.get("id"))
+        if service_key.parent().parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+
+        body = pick(["field", "value", "location"], input)
+        service = put_static(service_key, body)
+        return UpdateServiceStatic(service=service)

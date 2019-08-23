@@ -22,6 +22,7 @@ from messaging.schema.services import (
     Service as ServiceType,
     CreateService,
     UpdateService,
+    UpdateServiceStatic,
 )
 from messaging.schema.messages import Message as MessageType
 
@@ -51,6 +52,7 @@ class Mutation(graphene.ObjectType):
     updateProviderConfig = UpdateProviderConfig.Field()
     createService = CreateService.Field()
     updateService = UpdateService.Field()
+    updateServiceStatic = UpdateServiceStatic.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

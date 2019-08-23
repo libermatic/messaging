@@ -77,15 +77,13 @@ def list_by_site(site):
 
 
 def put_static(id, static):
-    service = ndb.Key(urlsafe=id).get()
-    if not service:
-        raise EntityNotFound("Service")
+    service = helpers.get_entity(Service, id)
     field = static.get("field")
     service.statics = filter(lambda x: x.get("field") != field, service.statics) + [
         static
     ]
     service.put()
-    return service.get_static(field)
+    return service
 
 
 def get_static(id, field):

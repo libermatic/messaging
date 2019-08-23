@@ -69,9 +69,7 @@ def remove_method(id, action):
 
 
 def put_config(id, config):
-    provider = Provider.get_by_id(id)
-    if not provider:
-        raise EntityNotFound("Provider")
+    provider = helpers.get_entity(Provider, id)
     provider.config = merge(provider.config or {}, config)
     provider.put()
-    return provider.to_dict()
+    return provider

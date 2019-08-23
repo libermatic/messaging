@@ -9,6 +9,7 @@ from messaging.models.providers import (
     create,
     put_method,
     remove_method,
+    put_config,
 )
 from messaging.models.services import Service as ServiceModel
 from messaging.schema.services import Service as ServiceType
@@ -32,6 +33,26 @@ class ProviderMethodAbstract(AbstractType):
 class ProviderMethod(ObjectType, ProviderMethodAbstract):
     pass
 
+
+class AuthLocation(graphene.Enum):
+    HEADER = "header"
+    BODY = "body"
+    QUERY = "query"
+
+
+class ProviderConfigAbstract(AbstractType):
+    auth_field = graphene.String(required=True)
+    auth_location = AuthLocation(required=True)
+    error_field = graphene.String()
+    error_condition = graphene.String()
+    cost_field = graphene.String()
+    balance_field = graphene.String()
+
+
+class ProviderConfig(ObjectType, ProviderConfigAbstract):
+    pass
+
+
 class Provider(NdbObjectType):
     class Meta:
         model = ProviderModel
@@ -41,6 +62,11 @@ class Provider(NdbObjectType):
 
     def resolve_methods(self, info, **args):
         return map(lambda x: ProviderMethod(**x), self.methods.values())
+
+    config = graphene.Field(ProviderConfig)
+
+    def resolve_config(self, info, **args):
+        return ProviderConfig(**self.config)
 
     services = NdbConnectionField(ServiceType)
 
@@ -101,3 +127,29 @@ class DeleteProviderMethod(relay.ClientIDMutation):
             raise ExecutionUnauthorized
         provider = remove_method(provider_key, input.get("action"))
         return UpdateProviderMethod(provider=provider)
+
+
+class UpdateProviderConfig(relay.ClientIDMutation):
+    class Input(ProviderConfigAbstract):
+        id = graphene.ID(required=True)
+
+    provider = graphene.Field(Provider)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        provider_key = get_key(input.get("id"))
+        if provider_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        body = pick(
+            [
+                "auth_field",
+                "auth_location",
+                "error_field",
+                "error_condition",
+                "cost_field",
+                "balance_field",
+            ],
+            input,
+        )
+        provider = put_config(provider_key, body)
+        return UpdateProviderConfig(provider=provider)

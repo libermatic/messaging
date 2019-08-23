@@ -26,12 +26,10 @@ from messaging.schema.services import (
     UpdateServiceStatic,
     DeleteServiceStatic,
 )
-from messaging.schema.messages import Message as MessageType
 
 
 class Query(graphene.ObjectType):
     node = relay.Node.Field()
-    messages = NdbConnectionField(MessageType)
 
     me = graphene.Field(UserType, resolver=UserType.me_resolver)
 
@@ -48,12 +46,15 @@ class Query(graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     signUp = SignUp.Field()
     logout = Logout.Field()
+
     createAccount = CreateAccount.Field()
     createAccountKey = CreateAccountKey.Field()
+
     createProvider = CreateProvider.Field()
     updateProviderMethod = UpdateProviderMethod.Field()
     deleteProviderMethod = DeleteProviderMethod.Field()
     updateProviderConfig = UpdateProviderConfig.Field()
+
     createService = CreateService.Field()
     updateService = UpdateService.Field()
     deleteService = DeleteService.Field()

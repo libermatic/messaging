@@ -7,6 +7,7 @@ from graphene_gae import NdbObjectType, NdbConnectionField
 from messaging.models.providers import (
     Provider as ProviderModel,
     create,
+    update,
     put_method,
     remove_method,
     put_config,
@@ -93,6 +94,29 @@ class CreateProvider(relay.ClientIDMutation):
             as_obj=True,
         )
         return CreateProvider(provider=provider)
+
+
+class UpdateProvider(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+        name = graphene.String()
+        type = graphene.String()
+        base_url = graphene.String()
+
+    provider = graphene.Field(Provider)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        provider_key = get_key(input.get("id"))
+        if provider_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        provider = update(
+            fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
+            provider=provider_key,
+            body=pick(["name", "type", "base_url"], input),
+            as_obj=True,
+        )
+        return UpdateProvider(provider=provider)
 
 
 class UpdateProviderMethod(relay.ClientIDMutation):

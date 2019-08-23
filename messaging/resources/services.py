@@ -94,6 +94,10 @@ def get_balance(id):
     return services.get_balance(id)
 
 
+def dispatch_action(id, action):
+    return compose(partial(services.call, id, action), _get_req_data)(request)
+
+
 def _get_req_data(req):
     if req.content_type == "application/x-www-form-urlencoded":
         return req.form

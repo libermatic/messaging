@@ -124,22 +124,22 @@ def _is_service_authorized(id, key=None):
 def call(id, action, body):
     if not _is_service_authorized(id, body.get("key")):
         raise ServiceUnauthorized()
-    service = ndb.Key(urlsafe=id).get()
+    service = helpers.get_entity(Service, id, urlsafe=True)
     provider = service.provider.get()
     method = provider.get_method(action)
     if not method:
         raise ServiceMethodNotFound("{} - {}".format(service.id, action))
     if not service.unlimit and service.balance <= 0:
         raise ServiceBalanceDepleted(id)
-    res = request(service.vendor_key, service.statics, provider.config, method, body)
-    if res.get("status") == "success":
+    msg = request(service.vendor_key, service.statics, provider.config, method, body)
+    if msg.get("status") == "success":
         if not service.unlimit:
-            service.balance -= res.get("cost", 1)
+            service.balance -= msg.get("cost", 0)
             service.put()
-        if res.get("balance"):
-            provider.balance = res.get("balance")
+        if msg.get("balance"):
+            provider.balance = msg.get("balance")
             provider.put()
-    return messages.create(service.key, res)
+    return messages.create(service.key, msg)
 
 
 def get_balance(id):

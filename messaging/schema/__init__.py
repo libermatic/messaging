@@ -15,6 +15,7 @@ from messaging.schema.providers import (
     Provider as ProviderType,
     CreateProvider,
     UpdateProviderMethod,
+    DeleteProviderMethod,
 )
 from messaging.schema.services import Service as ServiceType, CreateService
 from messaging.schema.messages import Message as MessageType
@@ -41,6 +42,7 @@ class Mutation(graphene.ObjectType):
     createAccountKey = CreateAccountKey.Field()
     createProvider = CreateProvider.Field()
     updateProviderMethod = UpdateProviderMethod.Field()
+    deleteProviderMethod = DeleteProviderMethod.Field()
     createService = CreateService.Field()
 
 

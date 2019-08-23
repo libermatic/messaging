@@ -4,7 +4,12 @@ import graphene
 from graphene import ObjectType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
-from messaging.models.providers import Provider as ProviderModel, create, put_method
+from messaging.models.providers import (
+    Provider as ProviderModel,
+    create,
+    put_method,
+    remove_method,
+)
 from messaging.models.services import Service as ServiceModel
 from messaging.schema.services import Service as ServiceType
 from messaging.utils import pick
@@ -75,4 +80,20 @@ class UpdateProviderMethod(relay.ClientIDMutation):
             raise ExecutionUnauthorized
         body = pick(["action", "method", "path", "args"], input)
         provider = put_method(provider_key, body)
+        return UpdateProviderMethod(provider=provider)
+
+
+class DeleteProviderMethod(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+        action = graphene.String(required=True)
+
+    provider = graphene.Field(Provider)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        provider_key = get_key(input.get("id"))
+        if provider_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        provider = remove_method(provider_key, input.get("action"))
         return UpdateProviderMethod(provider=provider)

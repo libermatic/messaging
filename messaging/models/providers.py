@@ -62,12 +62,10 @@ def put_method(id, method):
 
 
 def remove_method(id, action):
-    provider = Provider.get_by_id(id)
-    if not provider:
-        raise EntityNotFound("Provider")
+    provider = helpers.get_entity(Provider, id)
     provider.methods = dissoc(provider.methods or {}, action)
     provider.put()
-    return None
+    return provider
 
 
 def put_config(id, config):

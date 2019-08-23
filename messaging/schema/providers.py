@@ -1,19 +1,33 @@
 # -*- coding: utf-8 -*-
 
 import graphene
-from graphene import relay
+from graphene import ObjectType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
-from messaging.models.providers import Provider as ProviderModel, create
+from messaging.models.providers import Provider as ProviderModel, create, put_method
 from messaging.models.services import Service as ServiceModel
 from messaging.schema.services import Service as ServiceType
+from messaging.utils import pick
+from messaging.helpers import get_key
 from messaging.exceptions import ExecutionUnauthorized
+
+
+class ProviderMethod(ObjectType):
+    action = graphene.String(required=True)
+    method = graphene.String(required=True)
+    path = graphene.String(required=True)
+    args = graphene.List(graphene.String)
 
 
 class Provider(NdbObjectType):
     class Meta:
         model = ProviderModel
         interfaces = (relay.Node,)
+
+    methods = graphene.List(ProviderMethod)
+
+    def resolve_methods(self, info, **args):
+        return map(lambda x: ProviderMethod(**x), self.methods.values())
 
     services = NdbConnectionField(ServiceType)
 
@@ -42,3 +56,23 @@ class CreateProvider(relay.ClientIDMutation):
             as_obj=True,
         )
         return CreateProvider(provider=provider)
+
+
+class UpdateProviderMethod(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+        action = graphene.String(required=True)
+        method = graphene.String(required=True, choices=["GET", "POST"])
+        path = graphene.String(required=True)
+        args = graphene.List(graphene.String)
+
+    provider = graphene.Field(Provider)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        provider_key = get_key(input.get("id"))
+        if provider_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        body = pick(["action", "method", "path", "args"], input)
+        provider = put_method(provider_key, body)
+        return UpdateProviderMethod(provider=provider)

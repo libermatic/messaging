@@ -54,13 +54,11 @@ def get_method(id, action):
 
 
 def put_method(id, method):
-    provider = Provider.get_by_id(id)
-    if not provider:
-        raise EntityNotFound("Provider")
+    provider = helpers.get_entity(Provider, id)
     action = method.get("action")
     provider.methods = merge(provider.methods or {}, {action: method})
     provider.put()
-    return provider.get_method(action)
+    return provider
 
 
 def remove_method(id, action):

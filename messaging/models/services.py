@@ -49,15 +49,11 @@ class Service(ndb.Model):
             return None
 
 
-def create(fields, site, body, **args):
-    account = ndb.Key("Account", site)
+def create(fields, account, provider, body, **args):
     if not account.get():
-        raise ReferencedEntityNotFound("Account {} not found".format(site))
-    provider = ndb.Key("Provider", body.get("provider"))
+        raise ReferencedEntityNotFound("Account")
     if not provider.get():
-        raise ReferencedEntityNotFound(
-            "Provider {} not found".format(body.get("provider"))
-        )
+        raise ReferencedEntityNotFound("Provider")
     return helpers.make_create(Service, fields + ["parent"])(
         merge(body, {"provider": provider, "parent": account}), **args
     )

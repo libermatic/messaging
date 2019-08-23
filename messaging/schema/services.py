@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import graphene
-from graphene import relay
+from graphene import AbstractType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
-from toolz import dissoc
 
 from messaging.models.services import Service as ServiceModel, create
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.messages import Message as MessageType
+from messaging.utils import pick
+from messaging.helpers import get_key
+from messaging.exceptions import ExecutionUnauthorized
 
 
 class Service(NdbObjectType):
@@ -22,22 +24,33 @@ class Service(NdbObjectType):
         return MessageModel.query(ancestor=self.key)
 
 
+class ServiceInput(AbstractType):
+    name = graphene.String(required=True)
+    provider = graphene.String(required=True)
+    quota = graphene.Int()
+
+
 class CreateService(relay.ClientIDMutation):
-    class Input:
-        name = graphene.String(required=True)
-        site = graphene.String(required=True)
-        provider = graphene.String(required=True)
-        quota = graphene.Int()
+    class Input(ServiceInput):
+        account = graphene.String(required=True)
 
     service = graphene.Field(Service)
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        fields = filter(lambda x: x != "site", cls.Input._meta.fields.keys())
+        account_key = get_key(input.get("account"))
+        provider_key = get_key(input.get("provider"))
+        if (
+            account_key.parent() != info.context.user_key
+            or provider_key.parent() != info.context.user_key
+        ):
+            raise ExecutionUnauthorized
+
         service = create(
-            fields=fields,
-            site=input.get("site"),
-            body=dissoc(input, "site"),
+            fields=filter(lambda x: x != "account", cls.Input._meta.fields.keys()),
+            account=account_key,
+            provider=provider_key,
+            body=pick(["name", "quota"], input),
             as_obj=True,
         )
         return CreateService(service=service)

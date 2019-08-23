@@ -12,6 +12,7 @@ from messaging.models.services import Service as ServiceModel
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.services import Service as ServiceType
 from messaging.schema.messages import Message as MessageType
+from messaging.helpers import get_key
 from messaging.exceptions import ExecutionUnauthorized
 
 
@@ -62,13 +63,7 @@ class CreateAccountKey(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
-        account_key = compose(
-            lambda x: ndb.Key(urlsafe=x),
-            lambda x: x[1],
-            relay.Node.from_global_id,
-            partial(get, "id"),
-        )(input)
-
+        account_key = get_key(input.get("id"))
         if account_key.parent() != info.context.user_key:
             raise ExecutionUnauthorized
         key = generate_api_key(account_key)

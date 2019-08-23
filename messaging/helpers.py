@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
-from toolz import assoc
+from graphene import relay
+from toolz import assoc, compose
 
 from messaging.utils import pick
 from messaging.exceptions import EntityAlreadyExists, EntityNotFound, InvalidField
@@ -15,6 +16,11 @@ def get_entity(model, id):
     if not entity:
         raise EntityNotFound(model.__name__)
     return entity
+
+
+get_key = compose(
+    lambda x: ndb.Key(urlsafe=x), lambda x: x[1], relay.Node.from_global_id
+)
 
 
 def make_create(model, fields, id_field=None):

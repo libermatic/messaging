@@ -67,6 +67,10 @@ def update(fields, service, provider, body, **args):
     )
 
 
+def delete(service):
+    return helpers.delete(Service)(service)
+
+
 def list_by_site(site):
     entities = (
         Service.query(ancestor=ndb.Key("Account", site))

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from google.appengine.ext import ndb
+import graphene
 from graphene import relay
 from toolz import assoc, compose
 
@@ -9,6 +10,12 @@ from messaging.exceptions import EntityAlreadyExists, EntityNotFound, InvalidFie
 
 
 QUERY_LIMIT = 10
+
+
+class ParamLocation(graphene.Enum):
+    HEADER = "header"
+    BODY = "body"
+    QUERY = "query"
 
 
 def get_entity(model, id):

@@ -14,7 +14,7 @@ from messaging.models.providers import (
 from messaging.models.services import Service as ServiceModel
 from messaging.schema.services import Service as ServiceType
 from messaging.utils import pick
-from messaging.helpers import get_key
+from messaging.helpers import ParamLocation, get_key
 from messaging.exceptions import ExecutionUnauthorized
 
 
@@ -34,15 +34,9 @@ class ProviderMethod(ObjectType, ProviderMethodAbstract):
     pass
 
 
-class AuthLocation(graphene.Enum):
-    HEADER = "header"
-    BODY = "body"
-    QUERY = "query"
-
-
 class ProviderConfigAbstract(AbstractType):
     auth_field = graphene.String(required=True)
-    auth_location = AuthLocation(required=True)
+    auth_location = ParamLocation(required=True)
     error_field = graphene.String()
     error_condition = graphene.String()
     cost_field = graphene.String()

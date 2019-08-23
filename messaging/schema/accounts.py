@@ -8,6 +8,7 @@ from messaging.models.accounts import (
     Account as AccountModel,
     create,
     update,
+    delete,
     generate_api_key,
 )
 from messaging.models.services import Service as ServiceModel
@@ -78,6 +79,19 @@ class UpdateAccount(relay.ClientIDMutation):
             as_obj=True,
         )
         return UpdateAccount(account=account)
+
+
+class DeleteAccount(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, id):
+        account_key = get_key(input.get("id"))
+        if account_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        delete(account_key)
+        return DeleteAccount()
 
 
 class CreateAccountKey(relay.ClientIDMutation):

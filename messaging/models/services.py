@@ -59,11 +59,11 @@ def create(fields, account, provider, body, **args):
     )
 
 
-def update(fields, id, provider, body, **args):
+def update(fields, service, provider, body, **args):
     if provider and not provider.get():
         raise ReferencedEntityNotFound("Provider")
-    return helpers.make_update(Service, fields, key=True)(
-        id, merge(body, {"provider": provider}) if provider else body, **args
+    return helpers.make_update(Service, fields)(
+        service, merge(body, {"provider": provider}) if provider else body, **args
     )
 
 

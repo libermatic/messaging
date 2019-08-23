@@ -18,11 +18,21 @@ class ParamLocation(graphene.Enum):
     QUERY = "query"
 
 
-def get_entity(model, id):
-    entity = id.get() if isinstance(id, ndb.Key) else model.get_by_id(id)
-    if not entity:
-        raise EntityNotFound(model.__name__)
-    return entity
+def get_entity(model, id, urlsafe=False):
+    try:
+        entity = (
+            id.get()
+            if isinstance(id, ndb.Key)
+            else ndb.Key(urlsafe=id).get()
+            if urlsafe
+            else model.get_by_id(id)
+        )
+
+        if not entity:
+            raise EntityNotFound(model.__name__)
+        return entity
+    except TypeError as e:
+        raise InvalidField(*e)
 
 
 get_key = compose(
@@ -75,18 +85,7 @@ def make_list(model):
 
 def make_update(model, fields, key=False, urlsafe=False):
     def fn(id, body, as_obj=False):
-        try:
-            entity = (
-                id.get()
-                if key
-                else ndb.Key(urlsafe=id).get()
-                if urlsafe
-                else model.get_by_id(id)
-            )
-        except TypeError as e:
-            raise InvalidField(*e)
-        if not entity:
-            raise EntityNotFound(model.__name__)
+        entity = get_entity(model, id, urlsafe)
         field_kwargs = pick(fields, body)
         if field_kwargs:
             entity.populate(**field_kwargs)
@@ -98,12 +97,7 @@ def make_update(model, fields, key=False, urlsafe=False):
 
 def make_delete(model, urlsafe=False):
     def fn(id):
-        try:
-            entity = ndb.Key(urlsafe=id).get() if urlsafe else model.get_by_id(id)
-        except TypeError as e:
-            raise InvalidField(*e)
-        if not entity:
-            raise EntityNotFound(model.__name__)
+        entity = get_entity(model, id, urlsafe)
         return entity.key.delete()
 
     return fn

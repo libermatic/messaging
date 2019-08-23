@@ -98,7 +98,7 @@ class UpdateService(relay.ClientIDMutation):
 
         service = update(
             fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
-            id=service_key,
+            service=service_key,
             provider=check_and_get_provider(),
             body=pick(["name", "quota"], input),
             as_obj=True,

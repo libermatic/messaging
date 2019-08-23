@@ -24,6 +24,7 @@ from messaging.schema.services import (
     UpdateService,
     DeleteService,
     UpdateServiceStatic,
+    DeleteServiceStatic,
 )
 from messaging.schema.messages import Message as MessageType
 
@@ -55,6 +56,7 @@ class Mutation(graphene.ObjectType):
     updateService = UpdateService.Field()
     deleteService = DeleteService.Field()
     updateServiceStatic = UpdateServiceStatic.Field()
+    deleteServiceStatic = DeleteServiceStatic.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

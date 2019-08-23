@@ -101,12 +101,10 @@ def get_static(id, field):
 
 
 def remove_static(id, field):
-    service = ndb.Key(urlsafe=id).get()
-    if not service:
-        raise EntityNotFound("Service")
+    service = helpers.get_entity(Service, id)
     service.statics = filter(lambda x: x.get("field") != field, service.statics)
     service.put()
-    return None
+    return service
 
 
 def _is_service_authorized(id, key=None):

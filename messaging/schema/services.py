@@ -10,6 +10,7 @@ from messaging.models.services import (
     update,
     delete,
     put_static,
+    remove_static,
 )
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.messages import Message as MessageType
@@ -135,3 +136,20 @@ class UpdateServiceStatic(relay.ClientIDMutation):
         body = pick(["field", "value", "location"], input)
         service = put_static(service_key, body)
         return UpdateServiceStatic(service=service)
+
+
+class DeleteServiceStatic(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+        field = graphene.String(required=True)
+
+    service = graphene.Field(Service)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        service_key = get_key(input.get("id"))
+        if service_key.parent().parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+
+        service = remove_static(service_key, input.get("field"))
+        return DeleteServiceStatic(service=service)

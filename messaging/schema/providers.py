@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import graphene
-from graphene import ObjectType, relay
+from graphene import AbstractType, ObjectType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
 from messaging.models.providers import (
@@ -17,12 +17,20 @@ from messaging.helpers import get_key
 from messaging.exceptions import ExecutionUnauthorized
 
 
-class ProviderMethod(ObjectType):
+class Method(graphene.Enum):
+    GET = "GET"
+    POST = "POST"
+
+
+class ProviderMethodAbstract(AbstractType):
     action = graphene.String(required=True)
-    method = graphene.String(required=True)
+    method = Method(required=True)
     path = graphene.String(required=True)
     args = graphene.List(graphene.String)
 
+
+class ProviderMethod(ObjectType, ProviderMethodAbstract):
+    pass
 
 class Provider(NdbObjectType):
     class Meta:
@@ -64,12 +72,8 @@ class CreateProvider(relay.ClientIDMutation):
 
 
 class UpdateProviderMethod(relay.ClientIDMutation):
-    class Input:
+    class Input(ProviderMethodAbstract):
         id = graphene.ID(required=True)
-        action = graphene.String(required=True)
-        method = graphene.String(required=True, choices=["GET", "POST"])
-        path = graphene.String(required=True)
-        args = graphene.List(graphene.String)
 
     provider = graphene.Field(Provider)
 

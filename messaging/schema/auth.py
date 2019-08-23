@@ -84,15 +84,6 @@ class Logout(relay.ClientIDMutation):
         return Logout()
 
 
-def do_login(request):
-    data = request.get_json()
-    user = UserModel.get_by_id(data.get("email"))
-    if not user or not check_password_hash(user.password_hash, data.get("password")):
-        raise InvalidCredential("Account")
-    access_token = create_access_token(identity=user.key.urlsafe())
-    return access_token
-
-
 def auth_middleware(next, root, info, **args):
     info.context.user_key = get_current_user()
     return next(root, info, **args)

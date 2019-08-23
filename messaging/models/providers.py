@@ -43,6 +43,10 @@ def update(fields, provider, body, **args):
     return helpers.make_update(Provider, fields)(provider, body, **args)
 
 
+def delete(provider):
+    return helpers.delete(Provider)(provider)
+
+
 def get_method(id, action):
     # TODO: remove when restful is deprecated
     provider = helpers.get_entity(Provider, id)

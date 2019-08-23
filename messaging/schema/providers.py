@@ -8,6 +8,7 @@ from messaging.models.providers import (
     Provider as ProviderModel,
     create,
     update,
+    delete,
     put_method,
     remove_method,
     put_config,
@@ -117,6 +118,19 @@ class UpdateProvider(relay.ClientIDMutation):
             as_obj=True,
         )
         return UpdateProvider(provider=provider)
+
+
+class DeleteProvider(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, id):
+        provider_key = get_key(input.get("id"))
+        if provider_key.parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+        delete(provider_key)
+        return DeleteProvider()
 
 
 class UpdateProviderMethod(relay.ClientIDMutation):

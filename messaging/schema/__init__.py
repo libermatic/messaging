@@ -16,6 +16,7 @@ from messaging.schema.providers import (
     Provider as ProviderType,
     CreateProvider,
     UpdateProvider,
+    DeleteProvider,
     UpdateProviderMethod,
     DeleteProviderMethod,
     UpdateProviderConfig,
@@ -55,6 +56,7 @@ class Mutation(graphene.ObjectType):
 
     createProvider = CreateProvider.Field()
     updateProvider = UpdateProvider.Field()
+    deleteProvider = DeleteProvider.Field()
     updateProviderMethod = UpdateProviderMethod.Field()
     deleteProviderMethod = DeleteProviderMethod.Field()
     updateProviderConfig = UpdateProviderConfig.Field()

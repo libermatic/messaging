@@ -72,6 +72,7 @@ def delete(service):
 
 
 def list_by_site(site):
+    # TODO: remove when restful is deprecated
     entities = (
         Service.query(ancestor=ndb.Key("Account", site))
         .order(Service.modified_at)

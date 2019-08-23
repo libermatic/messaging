@@ -40,9 +40,8 @@ def create(fields, user, body, **args):
 
 
 def get_method(id, action):
-    provider = Provider.get_by_id(id)
-    if not provider:
-        raise EntityNotFound("Provider")
+    # TODO: remove when restful is deprecated
+    provider = helpers.get_entity(Provider, id)
     method = provider.get_method(action)
     if not method:
         raise ServiceMethodNotFound()

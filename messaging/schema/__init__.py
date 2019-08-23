@@ -9,6 +9,7 @@ from messaging.schema.auth import User as UserType, SignUp, Logout
 from messaging.schema.accounts import (
     Account as AccountType,
     CreateAccount,
+    UpdateAccount,
     CreateAccountKey,
 )
 from messaging.schema.providers import (
@@ -49,6 +50,7 @@ class Mutation(graphene.ObjectType):
 
     createAccount = CreateAccount.Field()
     createAccountKey = CreateAccountKey.Field()
+    updateAccount = UpdateAccount.Field()
 
     createProvider = CreateProvider.Field()
     updateProviderMethod = UpdateProviderMethod.Field()

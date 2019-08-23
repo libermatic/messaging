@@ -24,15 +24,12 @@ class Service(NdbObjectType):
         return MessageModel.query(ancestor=self.key)
 
 
-class ServiceInput(AbstractType):
-    name = graphene.String(required=True)
-    provider = graphene.String(required=True)
-    quota = graphene.Int()
-
-
 class CreateService(relay.ClientIDMutation):
-    class Input(ServiceInput):
+    class Input:
+        name = graphene.String(required=True)
         account = graphene.String(required=True)
+        provider = graphene.String(required=True)
+        quota = graphene.Int()
 
     service = graphene.Field(Service)
 
@@ -57,8 +54,11 @@ class CreateService(relay.ClientIDMutation):
 
 
 class UpdateService(relay.ClientIDMutation):
-    class Input(ServiceInput):
+    class Input:
         id = graphene.ID(required=True)
+        name = graphene.String()
+        provider = graphene.String()
+        quota = graphene.Int()
 
     service = graphene.Field(Service)
 
@@ -72,9 +72,13 @@ class UpdateService(relay.ClientIDMutation):
                 raise ExecutionUnauthorized
             return provider_key
 
+        service_key = get_key(input.get("id"))
+        if service_key.parent().parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+
         service = update(
-            fields=filter(cls.Input._meta.fields.keys()),
-            id=input.get("id"),
+            fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
+            id=service_key,
             provider=check_and_get_provider(),
             body=pick(["name", "quota"], input),
             as_obj=True,

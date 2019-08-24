@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-from flask import Flask
 from flask_restful import Api
+from flask import Flask, jsonify
 from flask_graphql import GraphQLView
 from flask_jwt_extended import JWTManager, jwt_required
 from google.appengine.ext import ndb
@@ -31,6 +31,15 @@ from messaging.resources.services import (
 from messaging.resources.messages import MessageList, MessageAll
 from messaging.exceptions import errors
 from messaging.schema import schema
+from messaging.exceptions import (
+    ServiceUnauthorized,
+    ServiceMethodNotFound,
+    ServiceBalanceDepleted,
+    UnsupportedContent,
+    EntityNotFound,
+    ServiceCallFailure,
+    InvalidField,
+)
 
 
 import requests_toolbelt.adapters.appengine
@@ -89,3 +98,16 @@ app.add_url_rule(
         GraphQLView.as_view("graf", schema=schema, middleware=[auth_middleware])
     ),
 )
+
+
+@app.errorhandler(ServiceUnauthorized)
+@app.errorhandler(ServiceMethodNotFound)
+@app.errorhandler(ServiceBalanceDepleted)
+@app.errorhandler(UnsupportedContent)
+@app.errorhandler(EntityNotFound)
+@app.errorhandler(ServiceCallFailure)
+@app.errorhandler(InvalidField)
+def handle_rest_errors(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response

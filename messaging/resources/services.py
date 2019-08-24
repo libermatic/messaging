@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import request
+from flask import request, abort, jsonify
 from flask_restful import Resource, fields, marshal_with, reqparse
 from functools import partial
 from toolz import compose, merge, get
@@ -103,7 +103,9 @@ def _get_req_data(req):
         return req.form
     if req.content_type == "application/json":
         return req.get_json()
-    raise UnsupportedContent(req.content_type)
+    raise UnsupportedContent(
+        "Content-Type '{}' is not supported".format(req.content_type)
+    )
 
 
 class ServiceAction(Resource):

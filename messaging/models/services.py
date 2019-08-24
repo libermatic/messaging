@@ -128,9 +128,9 @@ def call(id, action, body):
     provider = service.provider.get()
     method = provider.get_method(action)
     if not method:
-        raise ServiceMethodNotFound("{} - {}".format(service.id, action))
+        raise ServiceMethodNotFound("Action '{}' is unregistered".format(action))
     if not service.unlimit and service.balance <= 0:
-        raise ServiceBalanceDepleted(id)
+        raise ServiceBalanceDepleted()
     msg = request(service.vendor_key, service.statics, provider.config, method, body)
     if msg.get("status") == "success":
         if not service.unlimit:

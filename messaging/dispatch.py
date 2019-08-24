@@ -20,7 +20,7 @@ def _make_args(locations):
 
     def fn(config, key, statics):
         auth = (
-            {config.get("auth_label"): key}
+            {config.get("auth_field"): key}
             if config.get("auth_location") in locations
             else {}
         )

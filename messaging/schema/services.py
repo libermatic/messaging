@@ -53,8 +53,8 @@ class Service(NdbObjectType):
 class CreateService(relay.ClientIDMutation):
     class Input:
         name = graphene.String(required=True)
-        account = graphene.String(required=True)
-        provider = graphene.String(required=True)
+        account = graphene.ID(required=True)
+        provider = graphene.ID(required=True)
         quota = graphene.Int()
 
     service = graphene.Field(Service)

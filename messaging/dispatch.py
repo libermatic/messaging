@@ -31,14 +31,12 @@ def _make_args(locations):
 
 
 def _make_condition_check(config):
-    conds = config.get("error_condition")
+    condition = config.get("error_condition")
 
     def fn(d):
-        if conds:
-            for k, v in conds.iteritems():
-                if k in d and v == d[k]:
-                    return True
-        return False
+        if not condition:
+            return True
+        return bool(eval(condition, {"__builtins__": None}, dict(d)))
 
     return fn
 

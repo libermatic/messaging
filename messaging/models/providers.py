@@ -47,15 +47,6 @@ def delete(provider):
     return helpers.make_delete(Provider)(provider)
 
 
-def get_method(id, action):
-    # TODO: remove when restful is deprecated
-    provider = helpers.get_entity(Provider, id)
-    method = provider.get_method(action)
-    if not method:
-        raise ServiceMethodNotFound()
-    return method
-
-
 def put_method(id, method):
     provider = helpers.get_entity(Provider, id)
     action = method.get("action")

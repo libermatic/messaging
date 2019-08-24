@@ -72,16 +72,6 @@ def delete(service):
     return helpers.make_delete(Service)(service)
 
 
-def list_by_site(site):
-    # TODO: remove when restful is deprecated
-    entities = (
-        Service.query(ancestor=ndb.Key("Account", site))
-        .order(Service.modified_at)
-        .fetch(limit=helpers.QUERY_LIMIT)
-    )
-    return map(lambda x: x.to_dict(), entities)
-
-
 def put_static(id, static):
     service = helpers.get_entity(Service, id)
     field = static.get("field")

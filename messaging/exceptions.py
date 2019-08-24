@@ -104,20 +104,3 @@ class InvalidField(RestException):
 
     status_code = 400
     message = "Invalid datatype"
-
-
-# errors = {
-#     "EntityAlreadyExists": {"message": "Entity already exists.", "status": 409},
-#     "EntityNotFound": {"message": "Entity does not exists.", "status": 404},
-#     "ReferencedEntityNotFound": {
-#         "message": "Referenced entity does not exists.",
-#         "status": 404,
-#     },
-#     "BadRequestError": {"message": "Missing required fields.", "status": 400},
-#     "InvalidField": {"message": "Invalid datatype.", "status": 400},
-#     "ServiceUnauthorized": {"message": "Unauthorized.", "status": 401},
-#     "ServiceMethodNotFound": {"message": "Unsupported action.", "status": 400},
-#     "ServiceCallFailure": {"message": "Unable to execute at this time.", "status": 503},
-#     "UnsupportedContent": {"message": "Content Type is unsupported", "status": 400},
-#     "ServiceBalanceDepleted": {"message": "Balance exhausted", "status": 402},
-# }

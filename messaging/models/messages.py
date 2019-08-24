@@ -31,12 +31,3 @@ def create(service_key, body):
             "{} - {}: {}".format(service_key.id(), message.get("id"), body)
         )
     return message
-
-
-def list_by_service(service):
-    entities = (
-        Message.query(ancestor=ndb.Key(urlsafe=service))
-        .order(Message.modified_at)
-        .fetch(limit=helpers.QUERY_LIMIT)
-    )
-    return map(lambda x: x.to_dict(), entities)

@@ -61,9 +61,19 @@ class InvalidField(MessagingException):
 class ServiceUnauthorized(MessagingException):
     """Raises when access to service is unathorized"""
 
+    def __init__(self, message=None, **args):
+        super(ServiceUnauthorized, self).__init__(
+            message or "Unauthorized service", **args
+        )
+
 
 class ServiceMethodNotFound(MessagingException):
     """Raises when a service does not have a method"""
+
+    def __init__(self, message=None, **args):
+        super(ServiceMethodNotFound, self).__init__(
+            message or "Unsupported or invalid method", **args
+        )
 
 
 class ServiceCallFailure(MessagingException):

@@ -118,7 +118,7 @@ class DeleteService(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, id):
-        service_key = get_key(input.get("id"))
+        service_key = get_key(id)
         if service_key.parent().parent() != info.context.user_key:
             raise ExecutionUnauthorized
         delete(service_key)

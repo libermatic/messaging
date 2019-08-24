@@ -69,7 +69,7 @@ def update(fields, service, provider, body, **args):
 
 
 def delete(service):
-    return helpers.delete(Service)(service)
+    return helpers.make_delete(Service)(service)
 
 
 def list_by_site(site):

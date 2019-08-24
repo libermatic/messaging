@@ -87,7 +87,7 @@ class DeleteAccount(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, root, info, id):
-        account_key = get_key(input.get("id"))
+        account_key = get_key(id)
         if account_key.parent() != info.context.user_key:
             raise ExecutionUnauthorized
         delete(account_key)

@@ -44,7 +44,7 @@ def update(fields, provider, body, **args):
 
 
 def delete(provider):
-    return helpers.delete(Provider)(provider)
+    return helpers.make_delete(Provider)(provider)
 
 
 def get_method(id, action):

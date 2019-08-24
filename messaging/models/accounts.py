@@ -45,7 +45,7 @@ def update(fields, account, body, **args):
 
 
 def delete(account):
-    return helpers.delete(Account)(account)
+    return helpers.make_delete(Account)(account)
 
 
 def get_account_by_key(key):

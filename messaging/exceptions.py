@@ -37,8 +37,10 @@ class InvalidCredential(GraphQLError, RestException):
         )
 
 
-class EntityAlreadyExists(GraphQLError):
+class EntityAlreadyExists(GraphQLError, RestException):
     """Raises when entity already exists in store"""
+
+    status_code = 409
 
     def __init__(self, entity, message=None, **args):
         super(EntityAlreadyExists, self).__init__(

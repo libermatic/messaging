@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager, jwt_required
 from google.appengine.ext import ndb
 
 from messaging.schema.auth import auth_middleware
-from messaging.resources.auth import login
+from messaging.resources.auth import sign_up, login
 from messaging.resources.services import get_balance, dispatch_action
 from messaging.schema import schema
 from messaging.exceptions import (
@@ -45,6 +45,7 @@ def load_user(uid):
     return ndb.Key(urlsafe=uid)
 
 
+app.add_url_rule("/sign-up", view_func=sign_up, methods=["POST"])
 app.add_url_rule("/login", view_func=login, methods=["POST"])
 app.add_url_rule(
     "/services/<string:id>/balance", view_func=get_balance, methods=["GET"]

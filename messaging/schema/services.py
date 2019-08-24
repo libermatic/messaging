@@ -58,6 +58,7 @@ class CreateService(relay.ClientIDMutation):
         account = graphene.ID(required=True)
         provider = graphene.ID(required=True)
         quota = graphene.Int()
+        vendor_key = graphene.String()
 
     service = graphene.Field(Service)
 
@@ -87,6 +88,7 @@ class UpdateService(relay.ClientIDMutation):
         name = graphene.String()
         provider = graphene.String()
         quota = graphene.Int()
+        vendor_key = graphene.String()
 
     service = graphene.Field(Service)
 
@@ -108,7 +110,7 @@ class UpdateService(relay.ClientIDMutation):
             fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
             service=service_key,
             provider=check_and_get_provider(),
-            body=pick(["name", "quota"], input),
+            body=pick(["name", "quota", "vendor_key"], input),
             as_obj=True,
         )
         return UpdateService(service=service)

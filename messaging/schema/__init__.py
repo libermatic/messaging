@@ -28,6 +28,8 @@ from messaging.schema.services import (
     DeleteService,
     UpdateServiceStatic,
     DeleteServiceStatic,
+    ResetBalance,
+    LoadBalance,
 )
 
 
@@ -66,6 +68,8 @@ class Mutation(graphene.ObjectType):
     deleteService = DeleteService.Field()
     updateServiceStatic = UpdateServiceStatic.Field()
     deleteServiceStatic = DeleteServiceStatic.Field()
+    resetBalance = ResetBalance.Field()
+    loadBalance = LoadBalance.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

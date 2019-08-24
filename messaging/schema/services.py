@@ -11,6 +11,8 @@ from messaging.models.services import (
     delete,
     put_static,
     remove_static,
+    reset_balance,
+    load_balance,
 )
 from messaging.models.messages import Message as MessageModel
 from messaging.schema.messages import Message as MessageType
@@ -157,3 +159,36 @@ class DeleteServiceStatic(relay.ClientIDMutation):
 
         service = remove_static(service_key, input.get("field"))
         return DeleteServiceStatic(service=service)
+
+
+class ResetBalance(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+
+    service = graphene.Field(Service)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, id):
+        service_key = get_key(id)
+        if service_key.parent().parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+
+        service = reset_balance(service_key)
+        return ResetBalance(service=service)
+
+
+class LoadBalance(relay.ClientIDMutation):
+    class Input:
+        id = graphene.ID(required=True)
+        amount = graphene.Int(required=True)
+
+    service = graphene.Field(Service)
+
+    @classmethod
+    def mutate_and_get_payload(cls, root, info, **input):
+        service_key = get_key(input.get("id"))
+        if service_key.parent().parent() != info.context.user_key:
+            raise ExecutionUnauthorized
+
+        service = load_balance(service_key, input.get("amount"))
+        return LoadBalance(service=service)

@@ -138,18 +138,14 @@ def get_balance(id):
 
 
 def reset_balance(id):
-    service = ndb.Key(urlsafe=id).get()
-    if not service:
-        raise EntityNotFound("Service")
+    service = helpers.get_entity(Service, id, urlsafe=True)
     service.balance = service.quota
     service.put()
-    return service.to_dict()
+    return service
 
 
 def load_balance(id, amount):
-    service = ndb.Key(urlsafe=id).get()
-    if not service:
-        raise EntityNotFound("Service")
+    service = helpers.get_entity(Service, id, urlsafe=True)
     service.balance += amount
     service.put()
-    return service.to_dict()
+    return service

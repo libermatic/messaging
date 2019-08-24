@@ -26,8 +26,10 @@ class ExecutionUnauthorized(GraphQLError):
         )
 
 
-class InvalidCredential(GraphQLError):
+class InvalidCredential(GraphQLError, RestException):
     """Raises site and password does not match"""
+
+    status_code = 401
 
     def __init__(self, message=None, **args):
         super(InvalidCredential, self).__init__(

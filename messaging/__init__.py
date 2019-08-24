@@ -19,6 +19,7 @@ from messaging.exceptions import (
     EntityNotFound,
     ServiceCallFailure,
     InvalidField,
+    InvalidCredential,
 )
 
 
@@ -66,6 +67,7 @@ app.add_url_rule(
 @app.errorhandler(EntityNotFound)
 @app.errorhandler(ServiceCallFailure)
 @app.errorhandler(InvalidField)
+@app.errorhandler(InvalidCredential)
 def handle_rest_errors(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code

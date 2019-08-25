@@ -34,9 +34,9 @@ def _make_condition_check(config):
     condition = config.get("error_condition")
 
     def fn(d):
-        if not condition:
-            return True
-        return bool(eval(condition, {"__builtins__": None}, dict(d)))
+        if condition:
+            return bool(eval(condition, {"__builtins__": None}, dict(d)))
+        return False
 
     return fn
 

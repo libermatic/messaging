@@ -17,6 +17,7 @@ from messaging.exceptions import (
     ServiceBalanceDepleted,
     UnsupportedContent,
     EntityNotFound,
+    EntityAlreadyExists,
     ServiceCallFailure,
     InvalidField,
     InvalidCredential,
@@ -66,6 +67,7 @@ app.add_url_rule(
 @app.errorhandler(ServiceBalanceDepleted)
 @app.errorhandler(UnsupportedContent)
 @app.errorhandler(EntityNotFound)
+@app.errorhandler(EntityAlreadyExists)
 @app.errorhandler(ServiceCallFailure)
 @app.errorhandler(InvalidField)
 @app.errorhandler(InvalidCredential)

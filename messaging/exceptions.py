@@ -107,4 +107,4 @@ class InvalidField(RestException):
     """Raises when fields are of wrong type"""
 
     status_code = 400
-    message = "Invalid datatype"
+    message = "Invalid fields or params"

@@ -31,8 +31,10 @@ def get_entity(model, id, urlsafe=False):
         if not entity:
             raise EntityNotFound(model.__name__)
         return entity
-    except TypeError as e:
-        raise InvalidField(*e)
+    except Exception as e:
+        if e.__class__.__name__ in ("TypeError", "ProtocolBufferDecodeError"):
+            raise InvalidField()
+        raise e
 
 
 get_key = compose(

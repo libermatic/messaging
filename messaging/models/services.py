@@ -99,22 +99,21 @@ def remove_static(id, field):
     return service
 
 
-def _is_service_authorized(id, key=None):
-    if not key:
+def _is_service_authorized(service, key=None):
+    if not service or not key:
         return False
     account = get_account_by_key(key)
     if not account:
         return False
-    service = ndb.Key(urlsafe=id).get()
-    if not service or service.key.parent() != account.key:
+    if service.key.parent() != account.key:
         return False
     return True
 
 
 def call(id, action, body):
-    if not _is_service_authorized(id, body.get("key")):
-        raise ServiceUnauthorized()
     service = helpers.get_entity(Service, id, urlsafe=True)
+    if not _is_service_authorized(service, body.get("key")):
+        raise ServiceUnauthorized()
     provider = service.provider.get()
     method = provider.get_method(action)
     if not method:

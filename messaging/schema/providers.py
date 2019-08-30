@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import graphene
-from graphene import AbstractType, ObjectType, relay
+from graphene import AbstractType, ObjectType, InputObjectType, relay
 from graphene_gae import NdbObjectType, NdbConnectionField
 
 from messaging.models.providers import (
@@ -36,6 +36,11 @@ class ProviderMethod(ObjectType, ProviderMethodAbstract):
     pass
 
 
+class StringEncoderAbstract(AbstractType):
+    plain = graphene.String(required=True)
+    encoded = graphene.String(required=True)
+
+
 class ProviderConfigAbstract(AbstractType):
     auth_field = graphene.String(required=True)
     auth_location = ParamLocation(required=True)
@@ -45,8 +50,12 @@ class ProviderConfigAbstract(AbstractType):
     balance_field = graphene.String()
 
 
-class ProviderConfig(ObjectType, ProviderConfigAbstract):
+class StringEncoder(ObjectType, StringEncoderAbstract):
     pass
+
+
+class ProviderConfig(ObjectType, ProviderConfigAbstract):
+    encoders = graphene.List(StringEncoder)
 
 
 class Provider(NdbObjectType):
@@ -97,6 +106,9 @@ class CreateProvider(relay.ClientIDMutation):
         return CreateProvider(provider=provider)
 
 
+_provider_fields = ["name", "type", "base_url"]
+
+
 class UpdateProvider(relay.ClientIDMutation):
     class Input:
         id = graphene.ID(required=True)
@@ -114,7 +126,7 @@ class UpdateProvider(relay.ClientIDMutation):
         provider = update(
             fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
             provider=provider_key,
-            body=pick(["name", "type", "base_url"], input),
+            body=pick(_provider_fields, input),
             as_obj=True,
         )
         return UpdateProvider(provider=provider)
@@ -133,6 +145,9 @@ class DeleteProvider(relay.ClientIDMutation):
         return DeleteProvider()
 
 
+_provider_method_fields = ["action", "method", "path", "args"]
+
+
 class UpdateProviderMethod(relay.ClientIDMutation):
     class Input(ProviderMethodAbstract):
         id = graphene.ID(required=True)
@@ -144,7 +159,7 @@ class UpdateProviderMethod(relay.ClientIDMutation):
         provider_key = get_key(input.get("id"))
         if provider_key.parent() != info.context.user_key:
             raise ExecutionUnauthorized
-        body = pick(["action", "method", "path", "args"], input)
+        body = pick(_provider_method_fields, input)
         provider = put_method(provider_key, body)
         return UpdateProviderMethod(provider=provider)
 
@@ -165,9 +180,25 @@ class DeleteProviderMethod(relay.ClientIDMutation):
         return UpdateProviderMethod(provider=provider)
 
 
+class StringEncoderInput(InputObjectType, StringEncoderAbstract):
+    pass
+
+
+_provider_config_fields = [
+    "auth_field",
+    "auth_location",
+    "error_field",
+    "error_condition",
+    "cost_field",
+    "balance_field",
+    "encoders",
+]
+
+
 class UpdateProviderConfig(relay.ClientIDMutation):
     class Input(ProviderConfigAbstract):
         id = graphene.ID(required=True)
+        encoders = graphene.List(StringEncoderInput)
 
     provider = graphene.Field(Provider)
 
@@ -176,16 +207,6 @@ class UpdateProviderConfig(relay.ClientIDMutation):
         provider_key = get_key(input.get("id"))
         if provider_key.parent() != info.context.user_key:
             raise ExecutionUnauthorized
-        body = pick(
-            [
-                "auth_field",
-                "auth_location",
-                "error_field",
-                "error_condition",
-                "cost_field",
-                "balance_field",
-            ],
-            input,
-        )
+        body = pick(_provider_config_fields, input)
         provider = put_config(provider_key, body)
         return UpdateProviderConfig(provider=provider)

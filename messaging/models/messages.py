@@ -28,6 +28,6 @@ def create(service_key, body):
     )(merge(body, {"parent": service_key}))
     if req_has_failed:
         raise ServiceCallFailure(
-            "{} - {}: {}".format(service_key.id(), message.get("id"), body)
+            "{} - {}: {}".format(service_key.urlsafe(), message.get("id"), body)
         )
     return message

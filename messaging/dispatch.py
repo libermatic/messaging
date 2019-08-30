@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import logging
 from functools import reduce, partial
 from toolz import merge, assoc, valfilter, itemmap
 
@@ -119,5 +118,4 @@ def request(key, statics, config, method, body):
             prices(result) if not has_failed else {},
         )
     except (requests.ConnectionError, requests.Timeout) as e:
-        logging.error(e)
         raise ServiceCallFailure(*e)

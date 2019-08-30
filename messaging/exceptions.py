@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from graphql import GraphQLError
+import logging
 
 
 class RestException(Exception):
@@ -9,6 +10,7 @@ class RestException(Exception):
         super(RestException, self).__init__(message)
         if message:
             self.message = message
+        logging.error(self.message)
 
     def to_dict(self):
         return dict(status_code=self.status_code, message=self.message)

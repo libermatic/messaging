@@ -100,7 +100,7 @@ class ServiceCallFailure(RestException):
     """Raises when a call to service fails"""
 
     status_code = 503
-    message = "Unable to execute at this tim"
+    message = "Unable to execute at this time"
 
 
 class InvalidField(RestException):

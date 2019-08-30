@@ -3,7 +3,7 @@
 import requests
 import logging
 from functools import reduce, partial
-from toolz import merge, assoc, valfilter
+from toolz import merge, assoc, valfilter, itemmap
 
 from messaging.utils import pick
 from messaging.exceptions import ServiceCallFailure
@@ -67,15 +67,34 @@ def _make_prices(config):
     return partial(map_fields, map_fields(price_map, config))
 
 
+def _encode_payload(config):
+    args = config.get("args", [])
+    encoders = config.get("encoders", [])
+
+    def encode(item):
+        k, v = item
+        if k not in args:
+            return k, v
+        return (
+            k,
+            reduce(
+                lambda a, x: a.replace(x.get("plain"), x.get("encoded")), encoders, v
+            ),
+        )
+
+    return partial(itemmap, encode)
+
+
 def request(key, statics, config, method, body):
     make_headers = _make_args(["header"])
     make_payload = _make_args(["body", "query"])
+    encode = _encode_payload(config)
     headers = make_headers(config, key, statics)
     payload = merge(pick(method.get("args"), body), make_payload(config, key, statics))
     kwargs = {
         "method": method.get("method"),
         "url": _make_url(method),
-        "data" if method.get("method") == "POST" else "params": payload,
+        "data" if method.get("method") == "POST" else "params": encode(payload),
         "headers": headers,
     }
 

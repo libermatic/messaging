@@ -198,6 +198,8 @@ _provider_config_fields = [
 class UpdateProviderConfig(relay.ClientIDMutation):
     class Input(ProviderConfigAbstract):
         id = graphene.ID(required=True)
+        auth_field = graphene.String()
+        auth_location = ParamLocation()
         encoders = graphene.List(StringEncoderInput)
 
     provider = graphene.Field(Provider)

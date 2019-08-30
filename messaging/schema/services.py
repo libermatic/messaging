@@ -52,6 +52,9 @@ class Service(NdbObjectType):
         return ServiceModel.query(ancestor=info.context.user_key)
 
 
+_service_fields = ["name", "quota", "vendor_key"]
+
+
 class CreateService(relay.ClientIDMutation):
     class Input:
         name = graphene.String(required=True)
@@ -76,7 +79,7 @@ class CreateService(relay.ClientIDMutation):
             fields=filter(lambda x: x != "account", cls.Input._meta.fields.keys()),
             account=account_key,
             provider=provider_key,
-            body=pick(["name", "quota"], input),
+            body=pick(_service_fields, input),
             as_obj=True,
         )
         return CreateService(service=service)
@@ -110,7 +113,7 @@ class UpdateService(relay.ClientIDMutation):
             fields=filter(lambda x: x != "id", cls.Input._meta.fields.keys()),
             service=service_key,
             provider=check_and_get_provider(),
-            body=pick(["name", "quota", "vendor_key"], input),
+            body=pick(_service_fields, input),
             as_obj=True,
         )
         return UpdateService(service=service)
@@ -129,6 +132,9 @@ class DeleteService(relay.ClientIDMutation):
         return DeleteService()
 
 
+_service_static_fields = ["field", "value", "location"]
+
+
 class UpdateServiceStatic(relay.ClientIDMutation):
     class Input(ServiceStaticAbstract):
         id = graphene.ID(required=True)
@@ -141,7 +147,7 @@ class UpdateServiceStatic(relay.ClientIDMutation):
         if service_key.parent().parent() != info.context.user_key:
             raise ExecutionUnauthorized
 
-        body = pick(["field", "value", "location"], input)
+        body = pick(_service_static_fields, input)
         service = put_static(service_key, body)
         return UpdateServiceStatic(service=service)
 
